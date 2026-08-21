@@ -6,7 +6,7 @@ const os = require('os');
 
 const HTTP_PORT = 8080;
 const HTTPS_PORT = 8443;
-const PUBLIC_DIR = __dirname;
+const PUBLIC_DIR = path.resolve(__dirname);
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -24,7 +24,17 @@ function requestHandler(req, res) {
   let reqPath = req.url.split('?')[0];
   if (reqPath === '/') reqPath = '/index.html';
 
-  const filePath = path.join(PUBLIC_DIR, reqPath);
+  // Sanitize against Path Traversal (CWE-22 / CWE-23)
+  const safeRelativePath = path.normalize(reqPath).replace(/^(\.\.[\/\\])+/, '');
+  const filePath = path.resolve(PUBLIC_DIR, '.' + safeRelativePath);
+
+  // Strictly enforce that requested path is within PUBLIC_DIR boundary
+  if (!filePath.startsWith(PUBLIC_DIR)) {
+    res.writeHead(403, { 'Content-Type': 'text/plain' });
+    res.end('403 Forbidden');
+    return;
+  }
+
   const ext = path.extname(filePath).toLowerCase();
   const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
@@ -63,43 +73,35 @@ function getLanIps() {
   return ips;
 }
 
-const lanIps = getLanIps();
-
 // 1. Start HTTP Server
 const httpServer = http.createServer(requestHandler);
 httpServer.listen(HTTP_PORT, '0.0.0.0', () => {
-  console.log(`\n======================================================`);
-  console.log(`🌐 AIRGAP PROTOCOL - LOCAL WEB SERVER ACTIVE`);
-  console.log(`======================================================`);
-  console.log(`💻 SU QUESTO PC:`);
-  console.log(`   👉 http://localhost:${HTTP_PORT}/`);
-  console.log(`   👉 http://127.0.0.1:${HTTP_PORT}/`);
-  
-  if (lanIps.length > 0) {
-    console.log(`\n📱 DA SMARTPHONE O TABLET (Stessa rete Wi-Fi):`);
-    lanIps.forEach(ip => {
-      console.log(`   👉 http://${ip.address}:${HTTP_PORT}/   [${ip.name}]`);
-    });
-  }
+  console.log('\n======================================================');
+  console.log('📡 AIRGAP PROTOCOL - LOCAL HTTP SERVER ACTIVE');
+  console.log('======================================================');
+  console.log(`Local Access:    http://localhost:${HTTP_PORT}`);
+  const lanIps = getLanIps();
+  lanIps.forEach(ip => {
+    console.log(`LAN (${ip.name}): http://${ip.address}:${HTTP_PORT}`);
+  });
 });
 
-// 2. Start HTTPS Server (with PFX certificate)
+// 2. Start HTTPS Server (if self-signed cert is present)
 const pfxPath = path.join(PUBLIC_DIR, 'cert.pfx');
 if (fs.existsSync(pfxPath)) {
   try {
     const pfx = fs.readFileSync(pfxPath);
-    const httpsServer = https.createServer({ pfx, passphrase: 'airgap' }, requestHandler);
+    const httpsServer = https.createServer({ pfx, passphrase: '' }, requestHandler);
     httpsServer.listen(HTTPS_PORT, '0.0.0.0', () => {
-      console.log(`\n🔒 HTTPS SERVER (Connessione Crittografata TLS):`);
-      console.log(`   👉 https://localhost:${HTTPS_PORT}/`);
-      if (lanIps.length > 0) {
-        lanIps.forEach(ip => {
-          console.log(`   👉 https://${ip.address}:${HTTPS_PORT}/   [${ip.name}]`);
-        });
-      }
-      console.log(`======================================================\n`);
+      console.log('\n🔒 HTTPS SERVER ACTIVE (Camera + Torch Enabled)');
+      console.log(`Local Access:    https://localhost:${HTTPS_PORT}`);
+      const lanIps = getLanIps();
+      lanIps.forEach(ip => {
+        console.log(`LAN (${ip.name}): https://${ip.address}:${HTTPS_PORT}`);
+      });
+      console.log('======================================================\n');
     });
-  } catch (err) {
-    console.warn('Could not start HTTPS server:', err.message);
+  } catch (e) {
+    console.log('Note: HTTPS cert.pfx could not be loaded. Running on HTTP only.');
   }
 }

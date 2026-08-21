@@ -363,7 +363,15 @@ class I18nManager {
         if (el.tagName === 'INPUT' && (el.type === 'button' || el.type === 'submit')) {
           el.value = this.t(key);
         } else {
-          el.innerHTML = this.t(key);
+          const translated = this.t(key);
+          if (translated.includes('<') && translated.includes('>')) {
+            el.replaceChildren();
+            const template = document.createElement('template');
+            template.innerHTML = translated;
+            el.appendChild(template.content.cloneNode(true));
+          } else {
+            el.textContent = translated;
+          }
         }
       }
     });

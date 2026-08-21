@@ -6,10 +6,15 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+
 jobs:
   verify:
     name: Fountain Code & QR Engine Test Suite
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     strategy:
       matrix:

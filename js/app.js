@@ -1116,18 +1116,27 @@ class AirgapApp {
         const zipUrl = URL.createObjectURL(zipBlob);
         const zipName = `${file.name}_split_${res.totalParts}_parts.zip`;
 
-        splitResults.innerHTML = `
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
-            <strong>${res.totalParts} Parts Created (${AirgapUtilities.formatBytes(zipBlob.size)} Total):</strong>
-            <a href="${zipUrl}" download="${zipName}" class="btn-primary" style="width:auto; padding:6px 14px; font-size:0.82rem; text-decoration:none; text-align:center;">
-              ${i18n.t('downloadAllPartsZip')}
-            </a>
-          </div>
-          <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:6px;">${i18n.t('downloadSingleParts')}</div>
-          <div id="splitLinksList"></div>
-        `;
+        splitResults.replaceChildren();
+        const headerDiv = document.createElement('div');
+        headerDiv.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;';
+        
+        const strongEl = document.createElement('strong');
+        strongEl.textContent = `${res.totalParts} Parts Created (${AirgapUtilities.formatBytes(zipBlob.size)} Total):`;
+        headerDiv.appendChild(strongEl);
 
-        const listEl = document.getElementById('splitLinksList');
+        const zipLink = document.createElement('a');
+        zipLink.href = zipUrl;
+        zipLink.download = zipName;
+        zipLink.className = 'btn-primary';
+        zipLink.style.cssText = 'width:auto; padding:6px 14px; font-size:0.82rem; text-decoration:none; text-align:center;';
+        zipLink.textContent = i18n.t('downloadAllPartsZip');
+        headerDiv.appendChild(zipLink);
+
+        const hintDiv = document.createElement('div');
+        hintDiv.style.cssText = 'font-size:0.8rem; color:var(--text-muted); margin-bottom:6px;';
+        hintDiv.textContent = i18n.t('downloadSingleParts');
+
+        const listEl = document.createElement('div');
         res.parts.forEach(p => {
           const link = document.createElement('a');
           link.href = URL.createObjectURL(p.blob);
@@ -1139,6 +1148,10 @@ class AirgapApp {
           listEl.appendChild(link);
           listEl.appendChild(document.createElement('br'));
         });
+
+        splitResults.appendChild(headerDiv);
+        splitResults.appendChild(hintDiv);
+        splitResults.appendChild(listEl);
 
         Logger.success('TOOLS', `File split successfully into ${res.totalParts} parts.`);
       } catch (err) {
@@ -1184,7 +1197,7 @@ class AirgapApp {
         mergeFileNamesDisplay.textContent = '';
         mergeFileNamesDisplay.style.display = 'none';
         btnClearMerge.style.display = 'none';
-        mergeResults.innerHTML = '';
+        mergeResults.replaceChildren();
       });
     }
 
@@ -1199,18 +1212,23 @@ class AirgapApp {
         const merged = await AirgapUtilities.mergeParts(Array.from(mergeInput.files));
         const url = URL.createObjectURL(merged.blob);
 
-        let warnHtml = '';
+        mergeResults.replaceChildren();
+        const saveLink = document.createElement('a');
+        saveLink.href = url;
+        saveLink.download = merged.name;
+        saveLink.className = 'btn-primary';
+        saveLink.style.cssText = 'display:inline-block; margin-top:8px; text-decoration:none; text-align:center;';
+        saveLink.textContent = `💾 SAVE ASSEMBLED FILE: ${merged.name} (${AirgapUtilities.formatBytes(merged.size)})`;
+        mergeResults.appendChild(saveLink);
+
         if (merged.hasUnnumberedFiles) {
-          warnHtml = `<div style="background:rgba(255,183,3,0.15); border:1px solid var(--neon-amber); border-radius:6px; padding:8px; margin-top:8px; font-size:0.8rem; color:var(--neon-amber);">${i18n.t('errorMergerNoParts')}</div>`;
+          const warnDiv = document.createElement('div');
+          warnDiv.style.cssText = 'background:rgba(255,183,3,0.15); border:1px solid var(--neon-amber); border-radius:6px; padding:8px; margin-top:8px; font-size:0.8rem; color:var(--neon-amber);';
+          warnDiv.textContent = i18n.t('errorMergerNoParts');
+          mergeResults.appendChild(warnDiv);
           Logger.warn('TOOLS', 'Merged files without .part1, .part2 naming.');
         }
 
-        mergeResults.innerHTML = `
-          <a href="${url}" download="${merged.name}" class="btn-primary" style="display:inline-block; margin-top:8px; text-decoration:none; text-align:center;">
-            💾 SAVE ASSEMBLED FILE: ${merged.name} (${AirgapUtilities.formatBytes(merged.size)})
-          </a>
-          ${warnHtml}
-        `;
         Logger.success('TOOLS', `Assembled unified file: ${merged.name}`);
       } catch (err) {
         if (err.message === 'MAX_100_PARTS') {
@@ -1257,7 +1275,7 @@ class AirgapApp {
         optImageNameDisplay.textContent = '';
         optImageNameDisplay.style.display = 'none';
         btnClearOpt.style.display = 'none';
-        optResults.innerHTML = '';
+        optResults.replaceChildren();
       });
     }
 
@@ -1284,13 +1302,42 @@ class AirgapApp {
         const percentText = res.isReduced ? `(-${res.percentChange}%)` : `(+${res.percentChange}% - larger than original)`;
         const valColor = res.isReduced ? 'var(--neon-green)' : 'var(--neon-amber)';
 
-        optResults.innerHTML = `
-          <div class="file-meta-row"><span class="file-meta-label">Original:</span><span class="file-meta-val">${AirgapUtilities.formatBytes(res.originalSize)}</span></div>
-          <div class="file-meta-row"><span class="file-meta-label">Optimized:</span><span class="file-meta-val" style="color:${valColor}">${AirgapUtilities.formatBytes(res.optimizedSize)} ${percentText}</span></div>
-          <a href="${url}" download="${res.name}" class="btn-primary" style="display:inline-block; margin-top:8px; text-decoration:none; text-align:center;">
-            💾 SAVE OPTIMIZED IMAGE
-          </a>
-        `;
+        optResults.replaceChildren();
+
+        const origRow = document.createElement('div');
+        origRow.className = 'file-meta-row';
+        const origLabel = document.createElement('span');
+        origLabel.className = 'file-meta-label';
+        origLabel.textContent = 'Original:';
+        const origVal = document.createElement('span');
+        origVal.className = 'file-meta-val';
+        origVal.textContent = AirgapUtilities.formatBytes(res.originalSize);
+        origRow.appendChild(origLabel);
+        origRow.appendChild(origVal);
+
+        const optRow = document.createElement('div');
+        optRow.className = 'file-meta-row';
+        const optLabel = document.createElement('span');
+        optLabel.className = 'file-meta-label';
+        optLabel.textContent = 'Optimized:';
+        const optVal = document.createElement('span');
+        optVal.className = 'file-meta-val';
+        optVal.style.color = valColor;
+        optVal.textContent = `${AirgapUtilities.formatBytes(res.optimizedSize)} ${percentText}`;
+        optRow.appendChild(optLabel);
+        optRow.appendChild(optVal);
+
+        const optLink = document.createElement('a');
+        optLink.href = url;
+        optLink.download = res.name;
+        optLink.className = 'btn-primary';
+        optLink.style.cssText = 'display:inline-block; margin-top:8px; text-decoration:none; text-align:center;';
+        optLink.textContent = `💾 SAVE OPTIMIZED IMAGE: ${res.name}`;
+
+        optResults.appendChild(origRow);
+        optResults.appendChild(optRow);
+        optResults.appendChild(optLink);
+        
         Logger.success('TOOLS', `Image processed: ${percentText}`);
       } catch (err) {
         Logger.error('TOOLS', 'Image optimization error: ' + err.message);
