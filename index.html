@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title data-i18n="appTitle">AirGap Protocol</title>
+
+  <!-- Strict Offline Zero-Network Content Security Policy -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; worker-src 'self' blob:; connect-src 'none';">
+
+  <!-- PWA Manifest & Meta -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#00f0ff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="100% Offline Optical PWA for transferring binary files across air-gapped devices via Systematic Fountain QR Streams.">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body data-theme="default">
+
+  <!-- Top Cyberpunk HUD Navigation Bar -->
+  <header class="top-nav">
+    <div class="brand-section">
+      <svg class="brand-logo" viewBox="0 0 24 24">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+      </svg>
+      <div>
+        <div class="brand-title" data-i18n="appTitle">AirGap Protocol</div>
+      </div>
+      <span class="airgap-badge" data-i18n="offlineStatus">100% ISOLATO (OFFLINE AIR-GAP)</span>
+    </div>
+
+    <div class="nav-actions">
+      <!-- Language Toggle Switch -->
+      <button id="langToggleBtn" class="lang-toggle" title="Switch Language (IT / EN)">IT</button>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="tab-bar">
+    <button class="tab-btn active" data-tab="tx">
+      <span>📡</span> <span data-i18n="tabTransmitter">Trasmettitore (TX)</span>
+    </button>
+    <button class="tab-btn" data-tab="rx">
+      <span>📷</span> <span data-i18n="tabReceiver">Ricevitore (RX)</span>
+    </button>
+    <button class="tab-btn" data-tab="tools">
+      <span>🛠️</span> <span data-i18n="tabUtilities">Suite Strumenti</span>
+    </button>
+    <button class="tab-btn" data-tab="logs">
+      <span>📜</span> <span data-i18n="tabLogs">Log di Sistema</span>
+    </button>
+    <button class="tab-btn" data-tab="settings">
+      <span>⚙️</span> <span data-i18n="tabSettings">Impostazioni & Info</span>
+    </button>
+  </nav>
+
+  <!-- Main Viewport Container -->
+  <main class="main-content">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: TRANSMITTER (TX) -->
+    <!-- ========================================== -->
+    <section id="panel-tx" class="tab-panel active">
+      <div class="hud-grid">
+        
+        <!-- Left: Ingestion & Transmission Controls -->
+        <div class="hud-card">
+          <div class="hud-header">
+            <h2 class="hud-title" data-i18n="txTitle">Trasmettitore Ottico ad Alta Velocità</h2>
+            <p class="hud-subtitle" data-i18n="txSubtitle">Codifica file binari in stream visivi di codici QR a fontana senza limiti di tempo.</p>
+          </div>
+
+          <!-- Warnings & Errors for file sizes and duration -->
+          <div id="txSizeWarningBanner" style="display:none; background:rgba(255,183,3,0.15); border:1px solid var(--neon-amber); border-radius:8px; padding:10px; margin-bottom:12px; font-size:0.82rem; color:var(--neon-amber); font-family:var(--font-mono);"></div>
+          <div id="txDurationWarningBanner" style="display:none; background:rgba(255,183,3,0.15); border:1px solid var(--neon-amber); border-radius:8px; padding:10px; margin-bottom:12px; font-size:0.82rem; color:var(--neon-amber); font-family:var(--font-mono);"></div>
+          <div id="txSizeErrorBanner" style="display:none; background:rgba(255,23,68,0.15); border:1px solid var(--neon-crimson); border-radius:8px; padding:10px; margin-bottom:12px; font-size:0.82rem; color:var(--neon-crimson); font-family:var(--font-mono);"></div>
+
+          <!-- Drag & Drop Zone -->
+          <div id="txDropzone" class="dropzone">
+            <input type="file" id="txFileInput" multiple>
+            <svg class="dropzone-icon" viewBox="0 0 24 24">
+              <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+            </svg>
+            <div class="dropzone-prompt" data-i18n="dropzonePrompt">Trascina qui i file da trasmettere, o clicca per selezionare</div>
+            <div class="dropzone-hint" data-i18n="dropzoneHint">Supporta file singoli o multipli (consigliato fino a 30 MB, max 100 MB)</div>
+          </div>
+
+          <!-- File Metadata Card with Individual File List & Remove Buttons -->
+          <div id="txFileMetaCard" class="file-meta-card">
+            <div style="margin-bottom:6px;">
+              <strong style="color:var(--neon-cyan); font-size:0.85rem;" data-i18n="fileListTitle">File nel Trasferimento Corrente:</strong>
+            </div>
+            
+            <div id="txFileListContainer" class="file-list-container"></div>
+
+            <div class="file-meta-row" style="margin-top:6px;">
+              <span class="file-meta-label" data-i18n="fileName">Nome Bundle/File:</span>
+              <span id="txMetaName" class="file-meta-val">-</span>
+            </div>
+            <div class="file-meta-row">
+              <span class="file-meta-label" data-i18n="fileSize">Dimensione Totale:</span>
+              <span id="txMetaSize" class="file-meta-val">-</span>
+            </div>
+            <div class="file-meta-row">
+              <span class="file-meta-label" data-i18n="chunksTotal">Blocchi Totali (K):</span>
+              <span id="txMetaK" class="file-meta-val">-</span>
+            </div>
+            <div class="file-meta-row">
+              <span class="file-meta-label" data-i18n="fileSha256">Checksum SHA-256:</span>
+              <span id="txMetaSha" class="file-meta-val" style="font-size:0.72rem;">-</span>
+            </div>
+          </div>
+
+          <!-- Granular Tuning Controls (Editable before Start, Locked during Active Streaming) -->
+          <div id="txLockedSettingsArea">
+            <div class="control-group">
+              <div class="control-label">
+                <span data-i18n="speedFpsLabel">Frequenza Frame (QR / sec):</span>
+                <span id="txFpsVal" style="color:var(--neon-cyan); font-weight:bold;">15 FPS</span>
+              </div>
+              <input type="range" id="txFpsSlider" class="range-slider" min="1" max="60" value="15">
+              <div id="txFpsWarning" style="display:none; color:var(--neon-amber); font-size:0.75rem; margin-top:4px; font-family:var(--font-mono);">
+                ⚠️ &gt;25 FPS: Sconsigliato su smartphone con fotocamere lente.
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div class="control-group">
+                <div class="control-label" data-i18n="chunkSizeLabel" title="Quantità di dati per QR">Densità Blocco:</div>
+                <select id="txChunkSizeSelect" class="select-input">
+                  <option value="180">Compatto (180 B - Schermi piccoli)</option>
+                  <option value="256">Standard (256 B - Mobile)</option>
+                  <option value="380" selected>Medio (380 B - Consigliato)</option>
+                  <option value="512">Alto (512 B - Display 1080p)</option>
+                  <option value="768">Massimo (768 B - Display 4K)</option>
+                </select>
+              </div>
+
+              <div class="control-group">
+                <div class="control-label" data-i18n="eccLabel" title="Resistenza a riflessi e sfocature">Correzione Errore:</div>
+                <select id="txEccSelect" class="select-input">
+                  <option value="L">Bassa L (~7% - Più veloce)</option>
+                  <option value="M" selected>Media M (~15% - Consigliata)</option>
+                  <option value="Q">Alta Q (~25% - Più robusta)</option>
+                  <option value="H">Massima H (~30% - Riflessi/Vibrazioni)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="control-group" style="display:flex; flex-direction:column; gap:8px;">
+              <label class="toggle-switch">
+                <input type="checkbox" id="txCompressToggle" checked>
+                <div class="toggle-slider"></div>
+                <span data-i18n="compressLabel">Compressione Dinamica (Deflate)</span>
+              </label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="txStopAt100Toggle" checked>
+                <div class="toggle-slider"></div>
+                <span data-i18n="stopAt100Label">Arresta automaticamente al 100%</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Playback Buttons -->
+          <button id="btnStartTx" class="btn-primary" disabled data-i18n="btnStartTx">AVVIA STREAMING</button>
+          
+          <div class="btn-row">
+            <button id="btnPauseTx" class="btn-secondary" disabled data-i18n="btnPauseTx">PAUSA / FERMA FRAME</button>
+            <button id="btnStopTx" class="btn-secondary btn-danger" disabled data-i18n="btnStopTx">INTERROMPI</button>
+          </div>
+
+          <div class="btn-row">
+            <button id="btnStepPrev" class="btn-secondary" data-i18n="btnStepPrev">PASSO -1</button>
+            <button id="btnStepNext" class="btn-secondary" data-i18n="btnStepNext">PASSO +1</button>
+            <button id="btnResetTx" class="btn-secondary" data-i18n="btnResetTx">REIMPOSTA FILE</button>
+          </div>
+
+          <p id="txStatusText" style="font-size:0.85rem; color:var(--text-muted); font-family:var(--font-mono); margin-top:14px; text-align:center;" data-i18n="txStatusIdle">
+            Pronto. Seleziona un file per inizializzare l'encoder a fontana.
+          </p>
+        </div>
+
+        <!-- Right: Animated QR Output & Telemetry -->
+        <div class="hud-card" style="text-align: center;">
+          <div class="qr-container">
+            <canvas id="txQrCanvas" width="380" height="380"></canvas>
+          </div>
+
+          <!-- Real Telemetry Grid -->
+          <div class="telemetry-grid">
+            <div class="telemetry-box">
+              <div class="telemetry-label" data-i18n="txPacketCounter">Frame Corrente</div>
+              <div id="txTelemetryPacket" class="telemetry-val">#0</div>
+            </div>
+            <div class="telemetry-box">
+              <div class="telemetry-label" data-i18n="txProgressPercent">Progresso Sistematico</div>
+              <div id="txTelemetryProgress" class="telemetry-val">0%</div>
+            </div>
+            <div class="telemetry-box">
+              <div class="telemetry-label" data-i18n="txEtaLabel">Durata Stimata</div>
+              <div id="txTelemetryEta" class="telemetry-val">0:00</div>
+            </div>
+            <div class="telemetry-box">
+              <div class="telemetry-label" data-i18n="txFountainGenerated">Riparazione Emessi</div>
+              <div id="txTelemetryFountain" class="telemetry-val">0</div>
+            </div>
+            <div class="telemetry-box">
+              <div class="telemetry-label" data-i18n="txRealRate">Velocità Ottica</div>
+              <div id="txTelemetryRate" class="telemetry-val">0.0 KB/s</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: RECEIVER (RX) -->
+    <!-- ========================================== -->
+    <section id="panel-rx" class="tab-panel">
+      <div class="hud-grid">
+        
+        <!-- Left: Camera Viewfinder & Controls -->
+        <div class="hud-card">
+          <div class="hud-header">
+            <h2 class="hud-title" data-i18n="rxTitle">Ricevitore Ottico ad Alta Velocità</h2>
+            <p class="hud-subtitle" data-i18n="rxSubtitle">Decodifica in tempo reale con Belief Propagation ed Eliminazione Gaussiana su GF(2).</p>
+          </div>
+
+          <!-- Camera Stream -->
+          <div class="camera-wrapper">
+            <video id="rxVideo" playsinline autoplay muted></video>
+            <canvas id="rxProcessCanvas" style="display:none;"></canvas>
+            
+            <div class="camera-hud-overlay">
+              <div class="target-box">
+                <div class="laser-scanline"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Camera Selection & Actions -->
+          <select id="rxCameraSelect" class="select-input" style="margin-bottom: 12px; display:none;">
+            <option value="" data-i18n="cameraSelect">Seleziona Fotocamera</option>
+          </select>
+
+          <button id="btnStartCam" class="btn-primary" data-i18n="cameraStart">ATTIVA FOTOCAMERA</button>
+          <button id="btnStopCam" class="btn-primary btn-danger" style="display:none;" data-i18n="cameraStop">DISATTIVA FOTOCAMERA</button>
+
+          <div class="btn-row">
+            <button id="btnTorchToggle" class="btn-secondary" data-i18n="torchToggle">TORCIA / FLASH</button>
+            <button id="btnInvertToggle" class="btn-secondary" data-i18n="invertToggle">INVERTI COLORI</button>
+          </div>
+
+          <!-- Upload Fallback -->
+          <div style="margin-top: 14px; text-align:center;">
+            <label class="btn-secondary" style="display:inline-block; cursor:pointer;" data-i18n-title="rxUploadFallbackHelp">
+              <span data-i18n="rxUploadFallback">Carica Frame QR / Immagine</span>
+              <input type="file" id="rxSnapshotInput" accept="image/*" style="display:none;">
+            </label>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px; font-family:var(--font-mono);" data-i18n="rxUploadFallbackHelp">
+              Se non hai la fotocamera, puoi caricare foto scattate ai QR code.
+            </div>
+          </div>
+
+          <p id="rxStatusText" style="font-size:0.85rem; color:var(--text-muted); font-family:var(--font-mono); margin-top:14px; text-align:center;" data-i18n="rxStatusWaiting">
+            In attesa di pacchetti ottici OPTX-v2 validi...
+          </p>
+
+          <!-- Completion Banner -->
+          <div id="rxCompletionBanner" class="completion-banner">
+            <div id="rxCompletionTitle" class="completion-title" data-i18n="rxStatusComplete">RICOSTRUZIONE 100% COMPLETATA!</div>
+            <div id="rxCompletionSha" style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-main); margin-bottom:12px;"></div>
+            <button id="btnDownloadReconstructed" class="btn-primary" data-i18n="btnDownload">SALVA FILE RICOSTRUITO</button>
+          </div>
+        </div>
+
+        <!-- Right: Telemetry & Constellation Grid -->
+        <div class="hud-card">
+          <div class="hud-header">
+            <h3 class="hud-title" data-i18n="telemetryTitle">Telemetria Trasferimento Live</h3>
+          </div>
+
+          <div class="telemetry-grid">
+            <div class="telemetry-box">
+              <div class="telemetry-label" data-i18n="rxBlocksSolved">Blocchi Risolti (Rango)</div>
+              <div id="rxTelemetrySolved" class="telemetry-val">0 / 0</div>
+            </div>
+            <div class="telemetry-box">
+              <div class="telemetry-label" data-i18n="rxMissingBlocks">Blocchi Mancanti</div>
+              <div id="rxTelemetryMissing" class="telemetry-val">0</div>
+            </div>
+            <div class="telemetry-box">
+              <div class="telemetry-label" data-i18n="rxOpticalSpeed">Velocità Istantanea</div>
+              <div id="rxTelemetrySpeed" class="telemetry-val">0.0 KB/s</div>
+            </div>
+            <div class="telemetry-box">
+              <div class="telemetry-label" data-i18n="rxTrueEta">Tempo Stimato (ETA)</div>
+              <div id="rxTelemetryEta" class="telemetry-val">0:00</div>
+            </div>
+            <div class="telemetry-box">
+              <div class="telemetry-label" data-i18n="rxElapsedTime">Tempo Trascorso</div>
+              <div id="rxTelemetryElapsed" class="telemetry-val">0:00</div>
+            </div>
+            <div class="telemetry-box">
+              <div class="telemetry-label" data-i18n="rxDroppedFrames">Frame Corrotti</div>
+              <div id="rxTelemetryDropped" class="telemetry-val" style="color:var(--neon-crimson)">0</div>
+            </div>
+          </div>
+
+          <!-- Constellation Canvas Grid -->
+          <div class="constellation-wrapper">
+            <div class="hud-title" style="font-size:0.95rem; margin-bottom:8px;" data-i18n="rxConstellationTitle">
+              Costellazione Blocchi Fontana (Matrice GF(2))
+            </div>
+            <canvas id="rxConstellationCanvas" class="constellation-canvas"></canvas>
+            
+            <div class="constellation-legend">
+              <div class="legend-item">
+                <div class="legend-dot sys"></div>
+                <span data-i18n="legendSystematic">Sistematico (Grezzo)</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-dot fnt"></div>
+                <span data-i18n="legendFountain">Fontana (Riparato)</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-dot mis"></div>
+                <span data-i18n="legendMissing">In Attesa / Mancante</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: UTILITIES SUITE -->
+    <!-- ========================================== -->
+    <section id="panel-tools" class="tab-panel">
+      <div class="hud-grid">
+        
+        <!-- 1. File Splitter -->
+        <div class="hud-card">
+          <div class="hud-header">
+            <h3 class="hud-title" data-i18n="splitterTitle">Divisione File in Memoria</h3>
+            <p class="hud-subtitle" data-i18n="splitterDesc">Dividi file voluminosi in segmenti numerati (.part1, .part2) prima della trasmissione.</p>
+          </div>
+          
+          <div class="custom-file-selector">
+            <button class="btn-secondary" style="width:auto; padding:6px 12px;" data-i18n="browseSingle">Seleziona File</button>
+            <input type="file" id="splitFileInput">
+            <span id="splitFileNameDisplay" class="file-name-badge" style="display:none;"></span>
+            <button id="btnClearSplitFile" class="btn-icon" style="width:24px; height:24px; font-size:0.75rem; border-color:var(--neon-crimson); color:var(--neon-crimson); display:none;" title="Clear">✖</button>
+          </div>
+          
+          <div style="display:grid; grid-template-columns: 2fr 1fr; gap:12px;">
+            <div class="control-group">
+              <div class="control-label" data-i18n="splitSizeLabel">Dimensione Parte (1 - 1024):</div>
+              <input type="number" id="splitSizeInput" class="text-input" value="5" min="1" max="1024">
+            </div>
+            <div class="control-group">
+              <div class="control-label" data-i18n="splitUnitLabel">Unità Misura:</div>
+              <select id="splitUnitSelect" class="select-input">
+                <option value="MB" selected>MB</option>
+                <option value="KB">KB</option>
+              </select>
+            </div>
+          </div>
+
+          <button id="btnRunSplit" class="btn-primary" data-i18n="btnSplit">DIVIDI FILE</button>
+          <div id="splitResultsArea" style="margin-top:14px; font-family:var(--font-mono); font-size:0.85rem;"></div>
+        </div>
+
+        <!-- 2. File Merger -->
+        <div class="hud-card">
+          <div class="hud-header">
+            <h3 class="hud-title" data-i18n="mergerTitle">Unione Parti di File</h3>
+            <p class="hud-subtitle" data-i18n="mergerDesc">Ricomponi file divisi in parti (.part1, .part2) nel file originale completo (fino a 100 parti).</p>
+          </div>
+
+          <div class="custom-file-selector">
+            <button class="btn-secondary" style="width:auto; padding:6px 12px;" data-i18n="browseMultiple">Seleziona Parti</button>
+            <input type="file" id="mergePartsInput" multiple>
+            <span id="mergeFileNamesDisplay" class="file-name-badge" style="display:none;"></span>
+            <button id="btnClearMergeFiles" class="btn-icon" style="width:24px; height:24px; font-size:0.75rem; border-color:var(--neon-crimson); color:var(--neon-crimson); display:none;" title="Clear">✖</button>
+          </div>
+
+          <button id="btnRunMerge" class="btn-primary" data-i18n="btnMerge">UNISCI PARTI</button>
+          <div id="mergeResultsArea" style="margin-top:14px; font-family:var(--font-mono); font-size:0.85rem;"></div>
+        </div>
+
+        <!-- 3. Image Optimizer -->
+        <div class="hud-card">
+          <div class="hud-header">
+            <h3 class="hud-title" data-i18n="imageOptTitle">Ottimizzatore Dimensioni Immagini</h3>
+            <p class="hud-subtitle" data-i18n="imageOptDesc">Ricodifica immagini ad alta risoluzione in WebP/JPEG compresso localmente per velocizzare il QR.</p>
+          </div>
+
+          <div class="custom-file-selector">
+            <button class="btn-secondary" style="width:auto; padding:6px 12px;" data-i18n="browseSingle">Seleziona Immagine</button>
+            <input type="file" id="optImageInput" accept="image/*">
+            <span id="optImageNameDisplay" class="file-name-badge" style="display:none;"></span>
+            <button id="btnClearOptImage" class="btn-icon" style="width:24px; height:24px; font-size:0.75rem; border-color:var(--neon-crimson); color:var(--neon-crimson); display:none;" title="Clear">✖</button>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div class="control-group">
+              <div class="control-label" data-i18n="optQuality">Qualità Target (Intero 10 - 100%):</div>
+              <input type="number" id="optQualityInput" class="text-input" value="80" min="10" max="100" step="1">
+            </div>
+            <div class="control-group">
+              <div class="control-label" data-i18n="optFormat">Formato Target:</div>
+              <select id="optFormatSelect" class="select-input">
+                <option value="image/webp" selected>WebP (Consigliato)</option>
+                <option value="image/jpeg">JPEG Standard</option>
+              </select>
+            </div>
+          </div>
+
+          <button id="btnRunOptImage" class="btn-primary" data-i18n="btnOptimizeImage">OTTIMIZZA IMMAGINE</button>
+          <div id="optResultsArea" style="margin-top:14px; font-family:var(--font-mono); font-size:0.85rem;"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: SYSTEM LOGS -->
+    <!-- ========================================== -->
+    <section id="panel-logs" class="tab-panel">
+      <div class="hud-card">
+        <div class="hud-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div>
+            <h3 class="hud-title" data-i18n="logsTitle">Log di Sistema ed Eventi di Sicurezza</h3>
+            <p class="hud-subtitle" data-i18n="privacyNote">Nessuna connessione di rete. 100% Client-Side. Zero telemetria, zero cookie, zero tracciamento.</p>
+          </div>
+
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <select id="logsFilterSelect" class="select-input" style="width:auto; padding:6px 10px;">
+              <option value="ALL" data-i18n="logsAll">Tutti gli Eventi</option>
+              <option value="DEBUG" style="color:#8b949e;" data-i18n="logsDebug">Debug (Grigio)</option>
+              <option value="INFO" style="color:#00f0ff;" data-i18n="logsInfo">Informazioni (Ciano)</option>
+              <option value="SUCCESS" style="color:#39ff14;" data-i18n="logsSuccess">Successi (Verde)</option>
+              <option value="WARN" style="color:#ffb703;" data-i18n="logsWarn">Avvisi (Ambra)</option>
+              <option value="ERROR" style="color:#ff1744;" data-i18n="logsError">Errori (Rosso)</option>
+            </select>
+            <button id="btnClearLogs" class="btn-secondary btn-danger" data-i18n="btnClearLogs">CANCELLA LOG</button>
+            <button id="btnExportLogs" class="btn-secondary" data-i18n="btnExportLogs">ESPORTA LOG (.LOG)</button>
+          </div>
+        </div>
+
+        <!-- Color Legend Bar -->
+        <div style="display:flex; gap:12px; margin-bottom:8px; font-size:0.75rem; font-family:var(--font-mono); flex-wrap:wrap;">
+          <span style="color:#8b949e;">● Debug</span>
+          <span style="color:#00f0ff;">● Info</span>
+          <span style="color:#39ff14;">● Success</span>
+          <span style="color:#ffb703;">● Warning</span>
+          <span style="color:#ff1744;">● Error</span>
+          <span style="color:var(--text-muted); margin-left:auto;">⏱️ Privacy Time (T+00:00.0)</span>
+        </div>
+
+        <div id="logTerminal" class="log-terminal"></div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 5: SETTINGS & PRIVACY -->
+    <!-- ========================================== -->
+    <section id="panel-settings" class="tab-panel">
+      <div class="hud-card" style="max-width: 700px; margin: 0 auto;">
+        <div class="hud-header">
+          <h3 class="hud-title" data-i18n="settingsTitle">Configurazione & Riservatezza</h3>
+          <p class="hud-subtitle" data-i18n="privacyNote">Nessuna connessione di rete. 100% Client-Side. Zero telemetria, zero cookie, zero tracciamento.</p>
+        </div>
+
+        <div class="control-group">
+          <div class="control-label" data-i18n="prefTheme">Tema Cyberpunk HUD:</div>
+          <select id="prefThemeSelect" class="select-input">
+            <option value="default" data-i18n="themeDefault">Cyber Ciano (Predefinito)</option>
+            <option value="matrix" data-i18n="themeMatrix">Matrix Smeraldo</option>
+            <option value="amber" data-i18n="themeAmber">Terminale Ambra</option>
+            <option value="crimson" data-i18n="themeCrimson">Crimson Protocol</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label class="toggle-switch">
+            <input type="checkbox" id="prefSoundToggle">
+            <div class="toggle-slider"></div>
+            <span data-i18n="prefSound">Segnali Acustici di Notifica</span>
+          </label>
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span data-i18n="prefVolume">Volume Notifiche (%):</span>
+            <span id="prefVolumeVal" style="color:var(--neon-cyan); font-weight:bold;">30%</span>
+          </div>
+          <input type="range" id="prefVolumeSlider" class="range-slider" min="0" max="100" value="30">
+        </div>
+
+        <div style="margin-top: 24px; padding: 16px; background:var(--bg-tertiary); border-radius:8px; font-family:var(--font-mono); font-size:0.8rem; color:var(--text-muted); line-height:1.6;">
+          <strong style="color:var(--neon-cyan);">AirGap Protocol v2.3.0</strong><br/>
+          <span data-i18n="aboutFooterText">
+            • Codici a Fontana Sistematici Luby Transform & RaptorQ su GF(2)<br/>
+            • Framing Intestazione Binaria OPTX-v2 da 20 Byte Little-Endian<br/>
+            • Zero Cloud / Zero CDN / CSP Isolato a Livello Client (connect-src 'none')<br/>
+            • Timestamp Privacy Relativi alla Sessione (T+00:00.0)<br/>
+            • Licenza Open Source MIT
+          </span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Core Scripts (Ordered by dependency) -->
+  <script src="./js/logger.js"></script>
+  <script src="./js/i18n.js"></script>
+  <script src="./js/protocol.js"></script>
+  <script src="./js/fountain.js"></script>
+  <script src="./js/qr-engine.js"></script>
+  <script src="./js/jsqr.js"></script>
+  <script src="./js/qr-scanner.js"></script>
+  <script src="./js/utilities.js"></script>
+  <script src="./js/app.js"></script>
+
+</body>
+</html>
