@@ -121,21 +121,50 @@ class FountainCodec {
   }
 
   /**
-   * High performance in-place XOR for typed byte arrays.
+   * High performance in-place XOR for typed byte arrays using vectorized 64-bit BigUint64Array.
    */
   static xorBuffers(target, source) {
     const len = Math.min(target.length, source.length);
-    const words32 = len >>> 2;
-    const target32 = new Uint32Array(target.buffer, target.byteOffset, words32);
-    const source32 = new Uint32Array(source.buffer, source.byteOffset, words32);
+    if (len === 0) return;
 
-    for (let i = 0; i < words32; i++) {
-      target32[i] ^= source32[i];
+    // Check if both buffers are 8-byte aligned for fast 64-bit XOR
+    if ((target.byteOffset & 7) === 0 && (source.byteOffset & 7) === 0) {
+      const words64 = len >>> 3;
+      const target64 = new BigUint64Array(target.buffer, target.byteOffset, words64);
+      const source64 = new BigUint64Array(source.buffer, source.byteOffset, words64);
+
+      for (let i = 0; i < words64; i++) {
+        target64[i] ^= source64[i];
+      }
+
+      // Handle tail bytes
+      const tailOffset = words64 << 3;
+      for (let i = tailOffset; i < len; i++) {
+        target[i] ^= source[i];
+      }
+      return;
     }
 
-    // Handle tail bytes
-    const tailOffset = words32 << 2;
-    for (let i = tailOffset; i < len; i++) {
+    // Fallback: 4-byte aligned XOR
+    if ((target.byteOffset & 3) === 0 && (source.byteOffset & 3) === 0) {
+      const words32 = len >>> 2;
+      const target32 = new Uint32Array(target.buffer, target.byteOffset, words32);
+      const source32 = new Uint32Array(source.buffer, source.byteOffset, words32);
+
+      for (let i = 0; i < words32; i++) {
+        target32[i] ^= source32[i];
+      }
+
+      // Handle tail bytes
+      const tailOffset = words32 << 2;
+      for (let i = tailOffset; i < len; i++) {
+        target[i] ^= source[i];
+      }
+      return;
+    }
+
+    // Fallback: Byte-by-byte XOR for unaligned offsets
+    for (let i = 0; i < len; i++) {
       target[i] ^= source[i];
     }
   }
