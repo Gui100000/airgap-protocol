@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./assets/logo.jpg" alt="AirGap Protocol Logo" width="180" style="border-radius: 16px;">
+</p>
+
 # 📡 AirGap Protocol (`OPTX-v2`)
 
 [![GitHub Pages](https://img.shields.io/badge/Live_PWA-GitHub_Pages-00f0ff?style=for-the-badge&logo=github)](https://gui100000.github.io/airgap-protocol/)

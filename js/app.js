@@ -45,11 +45,34 @@ class AirgapApp {
   async init() {
     Logger.info('SYSTEM', 'Initializing AirGap Protocol v2.4.0...');
 
-    // Register Service Worker for Offline PWA
+    // Register Service Worker with Active Auto-Update Detection
     if ('serviceWorker' in navigator) {
       try {
-        await navigator.serviceWorker.register('./sw.js');
+        const reg = await navigator.serviceWorker.register('./sw.js');
         Logger.success('PWA', 'Cache-First Service Worker active. 100% offline isolation guaranteed.');
+
+        // Proactively check for newer versions when online
+        reg.update();
+
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                Logger.info('PWA', 'New application version detected. Updating cache...');
+                newWorker.postMessage('SKIP_WAITING');
+              }
+            });
+          }
+        });
+
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+          }
+        });
       } catch (err) {
         Logger.warn('PWA', 'Service worker registration note: ' + err.message);
       }
