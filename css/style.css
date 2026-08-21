@@ -108,15 +108,18 @@ body::before {
 }
 
 .brand-logo {
-  width: 32px;
-  height: 32px;
-  fill: var(--neon-cyan);
-  filter: drop-shadow(0 0 10px var(--neon-cyan));
-  transition: transform 0.3s var(--ease-spring);
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border-glow);
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);
+  transition: transform 0.3s var(--ease-spring), box-shadow 0.3s ease;
+  object-fit: cover;
 }
 
 .brand-logo:hover {
-  transform: rotate(15deg) scale(1.1);
+  transform: scale(1.08);
+  box-shadow: 0 0 24px rgba(0, 240, 255, 0.7);
 }
 
 .brand-title {

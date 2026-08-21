@@ -617,15 +617,27 @@ class AirgapApp {
 
   _requestNextTxPacket() {
     if (!this.txWorker || !this.txMeta) return;
-    const sendManifest = (this.txPacketIndex === 0 || (this.txPacketIndex % 25 === 0));
     
-    this.txWorker.postMessage({
-      type: 'GET_PACKET',
-      payload: {
-        packetIndex: this.txPacketIndex,
-        includeManifest: sendManifest
-      }
-    });
+    // Frame 0 is the Manifest descriptor frame
+    if (this.txPacketIndex === 0) {
+      this.txWorker.postMessage({
+        type: 'GET_PACKET',
+        payload: {
+          packetIndex: 0xFFFFFFFF,
+          includeManifest: true
+        }
+      });
+    } else {
+      // Frame 1..K are Systematic data blocks 0..K-1; Frame >K are Fountain repair droplets
+      const dataBlockIndex = this.txPacketIndex - 1;
+      this.txWorker.postMessage({
+        type: 'GET_PACKET',
+        payload: {
+          packetIndex: dataBlockIndex,
+          includeManifest: false
+        }
+      });
+    }
   }
 
   _renderTxPacket(packetPayload) {
@@ -646,23 +658,26 @@ class AirgapApp {
       const fountainEl = document.getElementById('txTelemetryFountain');
       const rateEl = document.getElementById('txTelemetryRate');
 
-      const isManifest = (packetPayload.flags & FLAGS.MANIFEST) !== 0;
+      const isManifest = (packetPayload.flags & FLAGS.MANIFEST) !== 0 || packetPayload.packetIndex === 0xFFFFFFFF;
+      const K = this.txMeta.totalBlocksK;
 
       if (isManifest) {
         pktEl.textContent = 'MANIFEST';
-      } else {
-        pktEl.textContent = `#${packetPayload.packetIndex}`;
-      }
-      
-      const K = this.txMeta.totalBlocksK;
-      if (packetPayload.packetIndex < K || isManifest) {
-        const cur = isManifest ? 0 : packetPayload.packetIndex + 1;
-        const pct = Math.min(100, Math.round((cur / K) * 100));
-        progEl.textContent = `${pct}% (${cur}/${K})`;
+        progEl.textContent = `0% (0/${K})`;
         fountainEl.textContent = '0';
       } else {
-        progEl.textContent = '100% (Completed)';
-        fountainEl.textContent = `+${Math.max(1, packetPayload.packetIndex - K + 1)}`;
+        const frameNum = packetPayload.packetIndex + 1;
+        if (frameNum <= K) {
+          pktEl.textContent = `#${frameNum}`;
+          const pct = Math.min(100, Math.round((frameNum / K) * 100));
+          progEl.textContent = `${pct}% (${frameNum}/${K})`;
+          fountainEl.textContent = '0';
+        } else {
+          pktEl.textContent = `FOUNTAIN`;
+          progEl.textContent = '100% (Completed)';
+          const repairCount = frameNum - K;
+          fountainEl.textContent = `+${repairCount}`;
+        }
       }
 
       const elapsedSec = Math.max(0.1, (Date.now() - this.txStartTime) / 1000);
