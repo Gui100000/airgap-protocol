@@ -194,6 +194,12 @@ class GF2Solver {
   addPacket(packetIndex, payload, fileId) {
     this.totalPacketsReceived++;
 
+    // Safety timeout protection: prevent unbounded loop on heavily corrupted stream
+    const maxLimit = Math.max(500, this.K * 10);
+    if (this.totalPacketsReceived > maxLimit && !this.isComplete()) {
+      return { isComplete: false, isTimeout: true, resolvedCount: this.resolvedCount, totalBlocksK: this.K, rank: this.rank };
+    }
+
     if (this.isComplete()) {
       return { isComplete: true, resolvedCount: this.resolvedCount, totalBlocksK: this.K, rank: this.rank };
     }

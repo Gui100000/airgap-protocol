@@ -181,16 +181,15 @@ class ProtocolEngine {
     const len = bytes.length;
     const bitLen = len * 8;
 
-    // Pad bytes
-    const padLen = ((len + 8) % 64 < 56) ? (56 - (len + 8) % 64) : (120 - (len + 8) % 64);
-    const padded = new Uint8Array(len + 1 + padLen + 8);
+    // Standard SHA-256 padding: 0x80, zeros, 64-bit length (big-endian)
+    const totalLen = Math.ceil((len + 1 + 8) / 64) * 64;
+    const padded = new Uint8Array(totalLen);
     padded.set(bytes);
     padded[len] = 0x80;
 
-    // Append 64-bit length big-endian
-    const view = new DataView(padded.buffer);
-    view.setUint32(padded.length - 4, bitLen >>> 0, false);
-    view.setUint32(padded.length - 8, Math.floor(bitLen / 0x100000000), false);
+    const view = new DataView(padded.buffer, padded.byteOffset, padded.byteLength);
+    view.setUint32(totalLen - 4, bitLen >>> 0, false);
+    view.setUint32(totalLen - 8, Math.floor(bitLen / 0x100000000), false);
 
     const W = new Uint32Array(64);
     for (let i = 0; i < padded.length; i += 64) {
