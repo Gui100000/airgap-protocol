@@ -34,3 +34,6 @@ jobs:
 
     - name: Run Standalone QR Matrix Generator Test Suite
       run: node tests/test-qr.js
+
+    - name: Run Security Test Suite
+      run: node tests/test-security.js
