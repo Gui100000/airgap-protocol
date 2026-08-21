@@ -1,6 +1,6 @@
 /**
  * AirGap Protocol - Bilingual Translation Dictionary (EN / IT) v2.4.0
- * 100% offline, reactive i18n manager with dynamic key substitution.
+ * 100% offline, reactive i18n manager with zero-HTML injection textContent.
  * Defaults to English (EN) on first visit, with instant toggle to Italian (IT).
  */
 const I18N_DICTIONARY = {
@@ -148,7 +148,7 @@ const I18N_DICTIONARY = {
     btnExportLogs: "EXPORT LOG FILE (.LOG)",
     confirmClearLogs: "Are you sure you want to clear the entire log buffer and reset the session timer?",
     exportLogSuccess: "Log exported: {lines} entries ({sizeKB} KB) in {format} format.",
-    aboutFooterText: "• Systematic Luby Transform & RaptorQ-inspired Fountain Codes over GF(2)<br/>• 20-Byte OPTX-v2 Little-Endian Wire Header Framing<br/>• Zero Cloud / Zero CDN / Pure Client-Side CSP (connect-src 'none')<br/>• Session-Relative Privacy Timestamps (T+00:00.0)<br/>• Open Source MIT License",
+    aboutFooterText: "• Systematic Luby Transform & RaptorQ-inspired Fountain Codes over GF(2)\n• 20-Byte OPTX-v2 Little-Endian Wire Header Framing\n• Zero Cloud / Zero CDN / Pure Client-Side CSP (connect-src 'none')\n• Session-Relative Privacy Timestamps (T+00:00.0)\n• Open Source MIT License",
 
     // Modals & General
     close: "CLOSE",
@@ -302,7 +302,7 @@ const I18N_DICTIONARY = {
     btnExportLogs: "ESPORTA LOG (.LOG)",
     confirmClearLogs: "Sei sicuro di voler cancellare tutti i log e azzerare il timer di sessione?",
     exportLogSuccess: "Log esportato: {lines} voci ({sizeKB} KB) in formato {format}.",
-    aboutFooterText: "• Codici a Fontana Sistematici Luby Transform & RaptorQ su GF(2)<br/>• Framing Intestazione Binaria OPTX-v2 da 20 Byte Little-Endian<br/>• Zero Cloud / Zero CDN / CSP Isolato a Livello Client (connect-src 'none')<br/>• Timestamp Privacy Relativi alla Sessione (T+00:00.0)<br/>• Licenza Open Source MIT",
+    aboutFooterText: "• Codici a Fontana Sistematici Luby Transform & RaptorQ su GF(2)\n• Framing Intestazione Binaria OPTX-v2 da 20 Byte Little-Endian\n• Zero Cloud / Zero CDN / CSP Isolato a Livello Client (connect-src 'none')\n• Timestamp Privacy Relativi alla Sessione (T+00:00.0)\n• Licenza Open Source MIT",
 
     // Modals & General
     close: "CHIUDI",
@@ -363,15 +363,7 @@ class I18nManager {
         if (el.tagName === 'INPUT' && (el.type === 'button' || el.type === 'submit')) {
           el.value = this.t(key);
         } else {
-          const translated = this.t(key);
-          if (translated.includes('<') && translated.includes('>')) {
-            el.replaceChildren();
-            const template = document.createElement('template');
-            template.innerHTML = translated;
-            el.appendChild(template.content.cloneNode(true));
-          } else {
-            el.textContent = translated;
-          }
+          el.textContent = this.t(key);
         }
       }
     });

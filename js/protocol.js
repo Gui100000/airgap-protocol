@@ -238,11 +238,12 @@ class ProtocolEngine {
    * Compresses an ArrayBuffer using native CompressionStream ('deflate-raw').
    */
   static async compress(dataBuffer) {
+    const uint8 = dataBuffer instanceof Uint8Array ? dataBuffer : new Uint8Array(dataBuffer);
     if (typeof CompressionStream !== 'undefined') {
       try {
         const cs = new CompressionStream('deflate-raw');
         const writer = cs.writable.getWriter();
-        writer.write(dataBuffer);
+        writer.write(uint8);
         writer.close();
         const reader = cs.readable.getReader();
         const chunks = [];
@@ -264,18 +265,19 @@ class ProtocolEngine {
         console.warn('CompressionStream failed, returning uncompressed:', e);
       }
     }
-    return new Uint8Array(dataBuffer);
+    return uint8;
   }
 
   /**
    * Decompresses an ArrayBuffer using native DecompressionStream ('deflate-raw').
    */
   static async decompress(compressedBuffer) {
+    const uint8 = compressedBuffer instanceof Uint8Array ? compressedBuffer : new Uint8Array(compressedBuffer);
     if (typeof DecompressionStream !== 'undefined') {
       try {
         const ds = new DecompressionStream('deflate-raw');
         const writer = ds.writable.getWriter();
-        writer.write(compressedBuffer);
+        writer.write(uint8);
         writer.close();
         const reader = ds.readable.getReader();
         const chunks = [];
