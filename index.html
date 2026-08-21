@@ -1,19 +1,75 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title data-i18n="appTitle">AirGap Protocol</title>
+  <title data-i18n="appTitle">AirGap Protocol - 100% Offline Optical File Transfer PWA</title>
 
   <!-- Strict Offline Zero-Network Content Security Policy -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; worker-src 'self' blob:; connect-src 'none';">
 
+  <!-- SEO Primary Meta Tags -->
+  <meta name="title" content="AirGap Protocol - 100% Offline Optical File Transfer PWA">
+  <meta name="description" content="Transmit files across air-gapped devices with zero network connectivity via high-speed animated Systematic Fountain QR Codes (GF(2) Soliton Codes). 100% private, client-side, zero cloud dependencies.">
+  <meta name="keywords" content="airgap file transfer, offline qr transfer, fountain codes pwa, zero network file sharing, visual optical data transfer, systematic soliton codes, airgapped security, raptorq, luby transform">
+  <meta name="author" content="AirGap Protocol Team">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://gui100000.github.io/airgap-protocol/">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://gui100000.github.io/airgap-protocol/">
+  <meta property="og:title" content="AirGap Protocol - 100% Offline Optical File Transfer">
+  <meta property="og:description" content="Transmit files across air-gapped devices with zero network connectivity via animated QR fountain codes. 100% client-side, zero cloud dependencies.">
+  <meta property="og:image" content="https://gui100000.github.io/airgap-protocol/assets/icon-512.png">
+  <meta property="og:site_name" content="AirGap Protocol">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://gui100000.github.io/airgap-protocol/">
+  <meta name="twitter:title" content="AirGap Protocol - 100% Offline Optical File Transfer">
+  <meta name="twitter:description" content="Zero-Network air-gapped file sharing via animated QR fountain codes. 100% client-side cryptography.">
+  <meta name="twitter:image" content="https://gui100000.github.io/airgap-protocol/assets/icon-512.png">
+
+  <!-- JSON-LD Structured Data for Google Rich Snippets -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "AirGap Protocol",
+    "url": "https://gui100000.github.io/airgap-protocol/",
+    "description": "100% Offline, Zero-Network Air-Gapped Optical File Transfer PWA via Animated Systematic Fountain QR Streams (GF(2) Soliton Codes).",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "All",
+    "browserRequirements": "Requires JavaScript and modern browser with Web Workers and Camera support",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "featureList": [
+      "100% Offline Air-Gapped Operation",
+      "Systematic Fountain Code (Luby Transform / RaptorQ over GF(2))",
+      "20-Byte OPTX-v2 Little-Endian Wire Header Framing",
+      "Client-Side SHA-256 Cryptographic Verification",
+      "Offline File Splitter, Merger and Image Optimizer Suite",
+      "Zero Cloud Dependencies (connect-src 'none')"
+    ],
+    "author": {
+      "@type": "Organization",
+      "name": "AirGap Protocol Open Source Project"
+    },
+    "license": "https://opensource.org/licenses/MIT"
+  }
+  </script>
+
   <!-- PWA Manifest & Meta -->
   <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/svg+xml" href="./assets/icon.svg">
+  <link rel="apple-touch-icon" href="./assets/icon-192.png">
   <meta name="theme-color" content="#00f0ff">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="description" content="100% Offline Optical PWA for transferring binary files across air-gapped devices via Systematic Fountain QR Streams.">
 
   <!-- Stylesheet -->
   <link rel="stylesheet" href="./css/style.css">
@@ -29,31 +85,31 @@
       <div>
         <div class="brand-title" data-i18n="appTitle">AirGap Protocol</div>
       </div>
-      <span class="airgap-badge" data-i18n="offlineStatus">100% ISOLATO (OFFLINE AIR-GAP)</span>
+      <span class="airgap-badge" data-i18n="offlineStatus">100% AIR-GAPPED (OFFLINE)</span>
     </div>
 
     <div class="nav-actions">
       <!-- Language Toggle Switch -->
-      <button id="langToggleBtn" class="lang-toggle" title="Switch Language (IT / EN)">IT</button>
+      <button id="langToggleBtn" class="lang-toggle" title="Switch Language (IT / EN)">EN</button>
     </div>
   </header>
 
   <!-- Navigation Tabs -->
   <nav class="tab-bar">
     <button class="tab-btn active" data-tab="tx">
-      <span>📡</span> <span data-i18n="tabTransmitter">Trasmettitore (TX)</span>
+      <span>📡</span> <span data-i18n="tabTransmitter">Transmitter (TX)</span>
     </button>
     <button class="tab-btn" data-tab="rx">
-      <span>📷</span> <span data-i18n="tabReceiver">Ricevitore (RX)</span>
+      <span>📷</span> <span data-i18n="tabReceiver">Receiver (RX)</span>
     </button>
     <button class="tab-btn" data-tab="tools">
-      <span>🛠️</span> <span data-i18n="tabUtilities">Suite Strumenti</span>
+      <span>🛠️</span> <span data-i18n="tabUtilities">Utility Suite</span>
     </button>
     <button class="tab-btn" data-tab="logs">
-      <span>📜</span> <span data-i18n="tabLogs">Log di Sistema</span>
+      <span>📜</span> <span data-i18n="tabLogs">System Logs</span>
     </button>
     <button class="tab-btn" data-tab="settings">
-      <span>⚙️</span> <span data-i18n="tabSettings">Impostazioni & Info</span>
+      <span>⚙️</span> <span data-i18n="tabSettings">Settings & Info</span>
     </button>
   </nav>
 
@@ -69,8 +125,8 @@
         <!-- Left: Ingestion & Transmission Controls -->
         <div class="hud-card">
           <div class="hud-header">
-            <h2 class="hud-title" data-i18n="txTitle">Trasmettitore Ottico ad Alta Velocità</h2>
-            <p class="hud-subtitle" data-i18n="txSubtitle">Codifica file binari in stream visivi di codici QR a fontana senza limiti di tempo.</p>
+            <h2 class="hud-title" data-i18n="txTitle">High-Speed Optical Transmitter</h2>
+            <p class="hud-subtitle" data-i18n="txSubtitle">Encodes binary files into animated QR fountain code streams.</p>
           </div>
 
           <!-- Warnings & Errors for file sizes and duration -->
@@ -84,32 +140,32 @@
             <svg class="dropzone-icon" viewBox="0 0 24 24">
               <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
             </svg>
-            <div class="dropzone-prompt" data-i18n="dropzonePrompt">Trascina qui i file, incolla da appunti (Ctrl+V) o seleziona</div>
-            <div class="dropzone-hint" data-i18n="dropzoneHint">Supporta file singoli o multipli (consigliato fino a 30 MB, max 100 MB)</div>
+            <div class="dropzone-prompt" data-i18n="dropzonePrompt">Drag & Drop file(s) here, paste clipboard (Ctrl+V), or browse</div>
+            <div class="dropzone-hint" data-i18n="dropzoneHint">Supports single or multiple files (up to 30 MB recommended, max 100 MB)</div>
           </div>
 
           <!-- File Metadata Card with Individual File List & Remove Buttons -->
           <div id="txFileMetaCard" class="file-meta-card">
             <div style="margin-bottom:6px;">
-              <strong style="color:var(--neon-cyan); font-size:0.85rem;" data-i18n="fileListTitle">File nel Trasferimento Corrente:</strong>
+              <strong style="color:var(--neon-cyan); font-size:0.85rem;" data-i18n="fileListTitle">Files in Current Transfer:</strong>
             </div>
             
             <div id="txFileListContainer" class="file-list-container"></div>
 
             <div class="file-meta-row" style="margin-top:6px;">
-              <span class="file-meta-label" data-i18n="fileName">Nome Bundle/File:</span>
+              <span class="file-meta-label" data-i18n="fileName">File Name:</span>
               <span id="txMetaName" class="file-meta-val">-</span>
             </div>
             <div class="file-meta-row">
-              <span class="file-meta-label" data-i18n="fileSize">Dimensione Totale:</span>
+              <span class="file-meta-label" data-i18n="fileSize">Total Size:</span>
               <span id="txMetaSize" class="file-meta-val">-</span>
             </div>
             <div class="file-meta-row">
-              <span class="file-meta-label" data-i18n="chunksTotal">Blocchi Totali (K):</span>
+              <span class="file-meta-label" data-i18n="chunksTotal">Total Blocks (K):</span>
               <span id="txMetaK" class="file-meta-val">-</span>
             </div>
             <div class="file-meta-row">
-              <span class="file-meta-label" data-i18n="fileSha256">Checksum SHA-256:</span>
+              <span class="file-meta-label" data-i18n="fileSha256">SHA-256 Checksum:</span>
               <span id="txMetaSha" class="file-meta-val" style="font-size:0.72rem;">-</span>
             </div>
           </div>
@@ -118,7 +174,7 @@
           <div id="txLockedSettingsArea">
             <div class="control-group">
               <div class="control-label">
-                <span data-i18n="speedFpsLabel">Frequenza Frame (QR / sec):</span>
+                <span data-i18n="speedFpsLabel">Frame Rate (QR / sec):</span>
                 <span id="txFpsVal" style="color:var(--neon-cyan); font-weight:bold;">15 FPS</span>
               </div>
               <input type="range" id="txFpsSlider" class="range-slider" min="1" max="60" value="15">
@@ -129,23 +185,23 @@
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
               <div class="control-group">
-                <div class="control-label" data-i18n="chunkSizeLabel" title="Quantità di dati per QR">Densità Blocco:</div>
+                <div class="control-label" data-i18n="chunkSizeLabel" title="Quantità di dati per QR">Block Density:</div>
                 <select id="txChunkSizeSelect" class="select-input">
-                  <option value="180">Compatto (180 B - Schermi piccoli)</option>
-                  <option value="256">Standard (256 B - Mobile)</option>
-                  <option value="380" selected>Medio (380 B - Consigliato)</option>
-                  <option value="512">Alto (512 B - Display 1080p)</option>
-                  <option value="768">Massimo (768 B - Display 4K)</option>
+                  <option value="180">Compact (180 B)</option>
+                  <option value="256">Standard (256 B)</option>
+                  <option value="380" selected>Medium (380 B - Recommended)</option>
+                  <option value="512">High (512 B)</option>
+                  <option value="768">Maximum (768 B)</option>
                 </select>
               </div>
 
               <div class="control-group">
-                <div class="control-label" data-i18n="eccLabel" title="Resistenza a riflessi e sfocature">Correzione Errore:</div>
+                <div class="control-label" data-i18n="eccLabel" title="Resistenza a riflessi e sfocature">Error Correction:</div>
                 <select id="txEccSelect" class="select-input">
-                  <option value="L">Bassa L (~7% - Più veloce)</option>
-                  <option value="M" selected>Media M (~15% - Consigliata)</option>
-                  <option value="Q">Alta Q (~25% - Più robusta)</option>
-                  <option value="H">Massima H (~30% - Riflessi/Vibrazioni)</option>
+                  <option value="L">Low L (~7% - Fastest)</option>
+                  <option value="M" selected>Medium M (~15% - Recommended)</option>
+                  <option value="Q">High Q (~25%)</option>
+                  <option value="H">Max H (~30% - Blur resilient)</option>
                 </select>
               </div>
             </div>
@@ -154,32 +210,32 @@
               <label class="toggle-switch">
                 <input type="checkbox" id="txCompressToggle" checked>
                 <div class="toggle-slider"></div>
-                <span data-i18n="compressLabel">Compressione Dinamica (Deflate)</span>
+                <span data-i18n="compressLabel">Dynamic Compression (Deflate)</span>
               </label>
               <label class="toggle-switch">
                 <input type="checkbox" id="txStopAt100Toggle" checked>
                 <div class="toggle-slider"></div>
-                <span data-i18n="stopAt100Label">Arresta automaticamente al 100%</span>
+                <span data-i18n="stopAt100Label">Stop automatically at 100%</span>
               </label>
             </div>
           </div>
 
           <!-- Playback Buttons -->
-          <button id="btnStartTx" class="btn-primary" disabled data-i18n="btnStartTx">AVVIA STREAMING</button>
+          <button id="btnStartTx" class="btn-primary" disabled data-i18n="btnStartTx">START STREAM</button>
           
           <div class="btn-row">
-            <button id="btnPauseTx" class="btn-secondary" disabled data-i18n="btnPauseTx">PAUSA / FERMA FRAME</button>
-            <button id="btnStopTx" class="btn-secondary btn-danger" disabled data-i18n="btnStopTx">INTERROMPI</button>
+            <button id="btnPauseTx" class="btn-secondary" disabled data-i18n="btnPauseTx">PAUSE / FREEZE</button>
+            <button id="btnStopTx" class="btn-secondary btn-danger" disabled data-i18n="btnStopTx">STOP STREAM</button>
           </div>
 
           <div class="btn-row">
-            <button id="btnStepPrev" class="btn-secondary" data-i18n="btnStepPrev">PASSO -1</button>
-            <button id="btnStepNext" class="btn-secondary" data-i18n="btnStepNext">PASSO +1</button>
-            <button id="btnResetTx" class="btn-secondary" data-i18n="btnResetTx">REIMPOSTA FILE</button>
+            <button id="btnStepPrev" class="btn-secondary" data-i18n="btnStepPrev">STEP -1</button>
+            <button id="btnStepNext" class="btn-secondary" data-i18n="btnStepNext">STEP +1</button>
+            <button id="btnResetTx" class="btn-secondary" data-i18n="btnResetTx">RESET FILE</button>
           </div>
 
           <p id="txStatusText" style="font-size:0.85rem; color:var(--text-muted); font-family:var(--font-mono); margin-top:14px; text-align:center;" data-i18n="txStatusIdle">
-            QR Code dimostrativo attivo. Seleziona un file per inizializzare l'encoder a fontana.
+            Demo test pattern displayed. Select a file to initialize fountain encoder.
           </p>
         </div>
 
@@ -192,23 +248,23 @@
           <!-- Real Telemetry Grid -->
           <div class="telemetry-grid">
             <div class="telemetry-box">
-              <div class="telemetry-label" data-i18n="txPacketCounter">Frame Corrente</div>
+              <div class="telemetry-label" data-i18n="txPacketCounter">Current Frame</div>
               <div id="txTelemetryPacket" class="telemetry-val">DEMO</div>
             </div>
             <div class="telemetry-box">
-              <div class="telemetry-label" data-i18n="txProgressPercent">Progresso Sistematico</div>
+              <div class="telemetry-label" data-i18n="txProgressPercent">Systematic Progress</div>
               <div id="txTelemetryProgress" class="telemetry-val">0%</div>
             </div>
             <div class="telemetry-box">
-              <div class="telemetry-label" data-i18n="txEtaLabel">Durata Stimata</div>
+              <div class="telemetry-label" data-i18n="txEtaLabel">Estimated Duration</div>
               <div id="txTelemetryEta" class="telemetry-val">0:00</div>
             </div>
             <div class="telemetry-box">
-              <div class="telemetry-label" data-i18n="txFountainGenerated">Riparazione Emessi</div>
+              <div class="telemetry-label" data-i18n="txFountainGenerated">Repair Emitted</div>
               <div id="txTelemetryFountain" class="telemetry-val">0</div>
             </div>
             <div class="telemetry-box">
-              <div class="telemetry-label" data-i18n="txRealRate">Velocità Ottica</div>
+              <div class="telemetry-label" data-i18n="txRealRate">Effective Rate</div>
               <div id="txTelemetryRate" class="telemetry-val">0.0 KB/s</div>
             </div>
           </div>
@@ -226,8 +282,8 @@
         <!-- Left: Camera Viewfinder & Controls -->
         <div class="hud-card">
           <div class="hud-header">
-            <h2 class="hud-title" data-i18n="rxTitle">Ricevitore Ottico ad Alta Velocità</h2>
-            <p class="hud-subtitle" data-i18n="rxSubtitle">Decodifica in tempo reale con Belief Propagation ed Eliminazione Gaussiana su GF(2).</p>
+            <h2 class="hud-title" data-i18n="rxTitle">High-Speed Optical Receiver</h2>
+            <p class="hud-subtitle" data-i18n="rxSubtitle">Real-time Belief Propagation & GF(2) Gaussian Elimination decoder.</p>
           </div>
 
           <!-- Camera Stream -->
@@ -244,69 +300,69 @@
 
           <!-- Camera Selection & Actions -->
           <select id="rxCameraSelect" class="select-input" style="margin-bottom: 12px; display:none;">
-            <option value="" data-i18n="cameraSelect">Seleziona Fotocamera</option>
+            <option value="" data-i18n="cameraSelect">Select Video Source</option>
           </select>
 
-          <button id="btnStartCam" class="btn-primary" data-i18n="cameraStart">ATTIVA FOTOCAMERA</button>
-          <button id="btnStopCam" class="btn-primary btn-danger" style="display:none;" data-i18n="cameraStop">DISATTIVA FOTOCAMERA</button>
+          <button id="btnStartCam" class="btn-primary" data-i18n="cameraStart">START CAMERA SCANNER</button>
+          <button id="btnStopCam" class="btn-primary btn-danger" style="display:none;" data-i18n="cameraStop">STOP CAMERA</button>
 
           <div class="btn-row">
-            <button id="btnTorchToggle" class="btn-secondary" data-i18n="torchToggle">TORCIA / FLASH</button>
-            <button id="btnInvertToggle" class="btn-secondary" data-i18n="invertToggle">INVERTI COLORI</button>
+            <button id="btnTorchToggle" class="btn-secondary" data-i18n="torchToggle">TORCH / FLASH</button>
+            <button id="btnInvertToggle" class="btn-secondary" data-i18n="invertToggle">INVERT COLORS</button>
           </div>
 
           <!-- Upload Fallback -->
           <div style="margin-top: 14px; text-align:center;">
             <label class="btn-secondary" style="display:inline-block; cursor:pointer;" data-i18n-title="rxUploadFallbackHelp">
-              <span data-i18n="rxUploadFallback">Carica Frame QR / Immagine</span>
+              <span data-i18n="rxUploadFallback">Upload QR Snapshot / Image</span>
               <input type="file" id="rxSnapshotInput" accept="image/*" style="display:none;">
             </label>
             <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px; font-family:var(--font-mono);" data-i18n="rxUploadFallbackHelp">
-              Se non hai la fotocamera, puoi caricare foto scattate ai QR code.
+              If camera is unavailable, you can upload photos of the QR codes.
             </div>
           </div>
 
           <p id="rxStatusText" style="font-size:0.85rem; color:var(--text-muted); font-family:var(--font-mono); margin-top:14px; text-align:center;" data-i18n="rxStatusWaiting">
-            In attesa di pacchetti ottici OPTX-v2 validi...
+            Awaiting valid OPTX-v2 optical packets...
           </p>
 
           <!-- Completion Banner -->
           <div id="rxCompletionBanner" class="completion-banner">
-            <div id="rxCompletionTitle" class="completion-title" data-i18n="rxStatusComplete">RICOSTRUZIONE 100% COMPLETATA!</div>
+            <div id="rxCompletionTitle" class="completion-title" data-i18n="rxStatusComplete">100% RECONSTRUCTION COMPLETE!</div>
             <div id="rxCompletionSha" style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-main); margin-bottom:12px;"></div>
-            <button id="btnDownloadReconstructed" class="btn-primary" data-i18n="btnDownload">SALVA FILE RICOSTRUITO</button>
+            <button id="btnDownloadReconstructed" class="btn-primary" data-i18n="btnDownload">SAVE RECONSTRUCTED FILE</button>
           </div>
         </div>
 
         <!-- Right: Telemetry & Constellation Grid -->
         <div class="hud-card">
           <div class="hud-header">
-            <h3 class="hud-title" data-i18n="telemetryTitle">Telemetria Trasferimento Live</h3>
+            <h3 class="hud-title" data-i18n="telemetryTitle">Live Transmission Telemetry</h3>
           </div>
 
           <div class="telemetry-grid">
             <div class="telemetry-box">
-              <div class="telemetry-label" data-i18n="rxBlocksSolved">Blocchi Risolti (Rango)</div>
+              <div class="telemetry-label" data-i18n="rxBlocksSolved">Blocks Solved (Rank)</div>
               <div id="rxTelemetrySolved" class="telemetry-val">0 / 0</div>
             </div>
             <div class="telemetry-box">
-              <div class="telemetry-label" data-i18n="rxMissingBlocks">Blocchi Mancanti</div>
+              <div class="telemetry-label" data-i18n="rxMissingBlocks">Blocks Missing</div>
               <div id="rxTelemetryMissing" class="telemetry-val">0</div>
             </div>
             <div class="telemetry-box">
-              <div class="telemetry-label" data-i18n="rxOpticalSpeed">Velocità Istantanea</div>
+              <div class="telemetry-label" data-i18n="rxOpticalSpeed">Instantaneous Speed</div>
               <div id="rxTelemetrySpeed" class="telemetry-val">0.0 KB/s</div>
             </div>
             <div class="telemetry-box">
-              <div class="telemetry-label" data-i18n="rxTrueEta">Tempo Stimato (ETA)</div>
+              <div class="telemetry-label" data-i18n="rxTrueEta">Mathematical ETA</div>
               <div id="rxTelemetryEta" class="telemetry-val">0:00</div>
             </div>
             <div class="telemetry-box">
-              <div class="telemetry-label" data-i18n="rxElapsedTime">Tempo Trascorso</div>
+              <div class="telemetry-label" data-i18n="rxElapsedTime">Elapsed Time</div>
               <div id="rxTelemetryElapsed" class="telemetry-val">0:00</div>
             </div>
             <div class="telemetry-box">
-              <div class="telemetry-label" data-i18n="rxDroppedFrames">Frame Corrotti</div>
+              <div class="telemetry-label" data-i18n="rxDroppedFrames">Corrupted Frames</div>
               <div id="rxTelemetryDropped" class="telemetry-val" style="color:var(--neon-crimson)">0</div>
             </div>
           </div>
@@ -314,22 +370,22 @@
           <!-- Constellation Canvas Grid -->
           <div class="constellation-wrapper">
             <div class="hud-title" style="font-size:0.95rem; margin-bottom:8px;" data-i18n="rxConstellationTitle">
-              Costellazione Blocchi Fontana (Matrice GF(2))
+              Fountain Block Constellation (GF(2) Matrix)
             </div>
             <canvas id="rxConstellationCanvas" class="constellation-canvas"></canvas>
             
             <div class="constellation-legend">
               <div class="legend-item">
                 <div class="legend-dot sys"></div>
-                <span data-i18n="legendSystematic">Sistematico (Grezzo)</span>
+                <span data-i18n="legendSystematic">Systematic (Raw)</span>
               </div>
               <div class="legend-item">
                 <div class="legend-dot fnt"></div>
-                <span data-i18n="legendFountain">Fontana (Riparato)</span>
+                <span data-i18n="legendFountain">Fountain (Repaired)</span>
               </div>
               <div class="legend-item">
                 <div class="legend-dot mis"></div>
-                <span data-i18n="legendMissing">In Attesa / Mancante</span>
+                <span data-i18n="legendMissing">Pending / Missing</span>
               </div>
             </div>
           </div>
@@ -348,33 +404,33 @@
         <!-- 1. File Splitter -->
         <div class="hud-card">
           <div class="hud-header">
-            <h3 class="hud-title" data-i18n="splitterTitle">Divisione File Intelligente</h3>
-            <p class="hud-subtitle" data-i18n="splitterDesc">Dividi file voluminosi per dimensione fissa o in esattamente N parti uguali.</p>
+            <h3 class="hud-title" data-i18n="splitterTitle">Smart File Splitter</h3>
+            <p class="hud-subtitle" data-i18n="splitterDesc">Divide large files into segments (.part1, .part2) by exact size or into N equal parts.</p>
           </div>
           
           <div class="custom-file-selector">
-            <button id="btnBrowseSplit" class="btn-secondary" style="width:auto; padding:6px 12px;" data-i18n="browseSingle">Seleziona File</button>
+            <button id="btnBrowseSplit" class="btn-secondary" style="width:auto; padding:6px 12px;" data-i18n="browseSingle">Select File</button>
             <input type="file" id="splitFileInput" style="display:none;">
             <span id="splitFileNameDisplay" class="file-name-badge" style="display:none;"></span>
             <button id="btnClearSplitFile" class="btn-icon" style="width:24px; height:24px; font-size:0.75rem; border-color:var(--neon-crimson); color:var(--neon-crimson); display:none;" title="Clear">✖</button>
           </div>
 
           <div class="control-group">
-            <div class="control-label" data-i18n="splitModeLabel">Modalità di Divisione:</div>
+            <div class="control-label" data-i18n="splitModeLabel">Split Mode:</div>
             <select id="splitModeSelect" class="select-input">
-              <option value="size" data-i18n="splitBySize" selected>Per Dimensione Parte (KB / MB)</option>
-              <option value="count" data-i18n="splitByCount">Per Numero di Parti Uguali (1 - 100)</option>
+              <option value="size" data-i18n="splitBySize" selected>By Part Size (KB / MB)</option>
+              <option value="count" data-i18n="splitByCount">By Number of Parts (1 - 100)</option>
             </select>
           </div>
           
           <!-- Size input area -->
           <div id="splitSizeArea" style="display:grid; grid-template-columns: 2fr 1fr; gap:12px;">
             <div class="control-group">
-              <div class="control-label" data-i18n="splitSizeLabel">Dimensione Parte (1 - 1024):</div>
+              <div class="control-label" data-i18n="splitSizeLabel">Part Size (1 - 1024):</div>
               <input type="number" id="splitSizeInput" class="text-input" value="5" min="1" max="1024">
             </div>
             <div class="control-group">
-              <div class="control-label" data-i18n="splitUnitLabel">Unità Misura:</div>
+              <div class="control-label" data-i18n="splitUnitLabel">Part Unit:</div>
               <select id="splitUnitSelect" class="select-input">
                 <option value="MB" selected>MB</option>
                 <option value="KB">KB</option>
@@ -385,42 +441,42 @@
           <!-- Count input area -->
           <div id="splitCountArea" style="display:none;">
             <div class="control-group">
-              <div class="control-label" data-i18n="splitCountLabel">Numero di Parti Uguali (1 - 100):</div>
+              <div class="control-label" data-i18n="splitCountLabel">Number of Equal Parts (1 - 100):</div>
               <input type="number" id="splitCountInput" class="text-input" value="4" min="1" max="100" step="1">
             </div>
           </div>
 
-          <button id="btnRunSplit" class="btn-primary" data-i18n="btnSplit">DIVIDI FILE</button>
+          <button id="btnRunSplit" class="btn-primary" data-i18n="btnSplit">SPLIT FILE</button>
           <div id="splitResultsArea" style="margin-top:14px; font-family:var(--font-mono); font-size:0.85rem;"></div>
         </div>
 
         <!-- 2. File Merger -->
         <div class="hud-card">
           <div class="hud-header">
-            <h3 class="hud-title" data-i18n="mergerTitle">Unione Parti di File</h3>
-            <p class="hud-subtitle" data-i18n="mergerDesc">Ricomponi file divisi in parti (.part1, .part2) nel file originale completo (fino a 100 parti).</p>
+            <h3 class="hud-title" data-i18n="mergerTitle">File Part Merger</h3>
+            <p class="hud-subtitle" data-i18n="mergerDesc">Recombine multi-part slice files (.part1, .part2) into the original unified file (up to 100 parts).</p>
           </div>
 
           <div class="custom-file-selector">
-            <button id="btnBrowseMerge" class="btn-secondary" style="width:auto; padding:6px 12px;" data-i18n="browseMultiple">Seleziona Parti</button>
+            <button id="btnBrowseMerge" class="btn-secondary" style="width:auto; padding:6px 12px;" data-i18n="browseMultiple">Select Part Files</button>
             <input type="file" id="mergePartsInput" multiple style="display:none;">
             <span id="mergeFileNamesDisplay" class="file-name-badge" style="display:none;"></span>
             <button id="btnClearMergeFiles" class="btn-icon" style="width:24px; height:24px; font-size:0.75rem; border-color:var(--neon-crimson); color:var(--neon-crimson); display:none;" title="Clear">✖</button>
           </div>
 
-          <button id="btnRunMerge" class="btn-primary" data-i18n="btnMerge">UNISCI PARTI</button>
+          <button id="btnRunMerge" class="btn-primary" data-i18n="btnMerge">MERGE PARTS</button>
           <div id="mergeResultsArea" style="margin-top:14px; font-family:var(--font-mono); font-size:0.85rem;"></div>
         </div>
 
         <!-- 3. Image Optimizer -->
         <div class="hud-card">
           <div class="hud-header">
-            <h3 class="hud-title" data-i18n="imageOptTitle">Ottimizzatore Dimensioni Immagini</h3>
-            <p class="hud-subtitle" data-i18n="imageOptDesc">Ricodifica immagini ad alta risoluzione in WebP/JPEG compresso localmente per velocizzare il QR.</p>
+            <h3 class="hud-title" data-i18n="imageOptTitle">Image Size Optimizer</h3>
+            <p class="hud-subtitle" data-i18n="imageOptDesc">Re-encode high-res images to compressed WebP/JPEG locally to maximize QR transfer speed.</p>
           </div>
 
           <div class="custom-file-selector">
-            <button id="btnBrowseOpt" class="btn-secondary" style="width:auto; padding:6px 12px;" data-i18n="browseSingle">Seleziona Immagine</button>
+            <button id="btnBrowseOpt" class="btn-secondary" style="width:auto; padding:6px 12px;" data-i18n="browseSingle">Select Image</button>
             <input type="file" id="optImageInput" accept="image/*" style="display:none;">
             <span id="optImageNameDisplay" class="file-name-badge" style="display:none;"></span>
             <button id="btnClearOptImage" class="btn-icon" style="width:24px; height:24px; font-size:0.75rem; border-color:var(--neon-crimson); color:var(--neon-crimson); display:none;" title="Clear">✖</button>
@@ -428,19 +484,19 @@
 
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
             <div class="control-group">
-              <div class="control-label" data-i18n="optQuality">Qualità Target (Intero 10 - 100%):</div>
+              <div class="control-label" data-i18n="optQuality">Target Quality (Integer 10 - 100%):</div>
               <input type="number" id="optQualityInput" class="text-input" value="80" min="10" max="100" step="1">
             </div>
             <div class="control-group">
-              <div class="control-label" data-i18n="optFormat">Formato Target:</div>
+              <div class="control-label" data-i18n="optFormat">Target Format:</div>
               <select id="optFormatSelect" class="select-input">
-                <option value="image/webp" selected>WebP (Consigliato)</option>
+                <option value="image/webp" selected>WebP (Recommended)</option>
                 <option value="image/jpeg">JPEG Standard</option>
               </select>
             </div>
           </div>
 
-          <button id="btnRunOptImage" class="btn-primary" data-i18n="btnOptimizeImage">OTTIMIZZA IMMAGINE</button>
+          <button id="btnRunOptImage" class="btn-primary" data-i18n="btnOptimizeImage">OPTIMIZE IMAGE</button>
           <div id="optResultsArea" style="margin-top:14px; font-family:var(--font-mono); font-size:0.85rem;"></div>
         </div>
 
@@ -454,21 +510,21 @@
       <div class="hud-card">
         <div class="hud-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
           <div>
-            <h3 class="hud-title" data-i18n="logsTitle">Log di Sistema ed Eventi di Sicurezza</h3>
-            <p class="hud-subtitle" data-i18n="privacyNote">Nessuna connessione di rete. 100% Client-Side. Zero telemetria, zero cookie, zero tracciamento.</p>
+            <h3 class="hud-title" data-i18n="logsTitle">System Event & Security Logs</h3>
+            <p class="hud-subtitle" data-i18n="privacyNote">Zero network connectivity. 100% Client-Side. No telemetry, no cookies, no tracking.</p>
           </div>
 
           <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
             <select id="logsFilterSelect" class="select-input" style="width:auto; padding:6px 10px;">
-              <option value="ALL" data-i18n="logsAll">Tutti gli Eventi</option>
-              <option value="DEBUG" style="color:#8b949e;" data-i18n="logsDebug">Debug (Grigio)</option>
-              <option value="INFO" style="color:#00f0ff;" data-i18n="logsInfo">Informazioni (Ciano)</option>
-              <option value="SUCCESS" style="color:#39ff14;" data-i18n="logsSuccess">Successi (Verde)</option>
-              <option value="WARN" style="color:#ffb703;" data-i18n="logsWarn">Avvisi (Ambra)</option>
-              <option value="ERROR" style="color:#ff1744;" data-i18n="logsError">Errori (Rosso)</option>
+              <option value="ALL" data-i18n="logsAll">All Events</option>
+              <option value="DEBUG" style="color:#8b949e;" data-i18n="logsDebug">Debug (Gray)</option>
+              <option value="INFO" style="color:#00f0ff;" data-i18n="logsInfo">Info (Cyan)</option>
+              <option value="SUCCESS" style="color:#39ff14;" data-i18n="logsSuccess">Success (Green)</option>
+              <option value="WARN" style="color:#ffb703;" data-i18n="logsWarn">Warnings (Amber)</option>
+              <option value="ERROR" style="color:#ff1744;" data-i18n="logsError">Errors (Red)</option>
             </select>
-            <button id="btnClearLogs" class="btn-secondary btn-danger" data-i18n="btnClearLogs">CANCELLA LOG</button>
-            <button id="btnExportLogs" class="btn-secondary" data-i18n="btnExportLogs">ESPORTA LOG (.LOG)</button>
+            <button id="btnClearLogs" class="btn-secondary btn-danger" data-i18n="btnClearLogs">CLEAR LOGS</button>
+            <button id="btnExportLogs" class="btn-secondary" data-i18n="btnExportLogs">EXPORT LOG FILE (.LOG)</button>
           </div>
         </div>
 
@@ -492,16 +548,16 @@
     <section id="panel-settings" class="tab-panel">
       <div class="hud-card" style="max-width: 700px; margin: 0 auto;">
         <div class="hud-header">
-          <h3 class="hud-title" data-i18n="settingsTitle">Configurazione & Riservatezza</h3>
-          <p class="hud-subtitle" data-i18n="privacyNote">Nessuna connessione di rete. 100% Client-Side. Zero telemetria, zero cookie, zero tracciamento.</p>
+          <h3 class="hud-title" data-i18n="settingsTitle">Configuration & Privacy</h3>
+          <p class="hud-subtitle" data-i18n="privacyNote">Zero network connectivity. 100% Client-Side. No telemetry, no cookies, no tracking.</p>
         </div>
 
         <div class="control-group">
-          <div class="control-label" data-i18n="prefTheme">Tema Cyberpunk HUD:</div>
+          <div class="control-label" data-i18n="prefTheme">HUD Visual Theme:</div>
           <select id="prefThemeSelect" class="select-input">
-            <option value="default" data-i18n="themeDefault">Cyber Ciano (Predefinito)</option>
-            <option value="matrix" data-i18n="themeMatrix">Matrix Smeraldo</option>
-            <option value="amber" data-i18n="themeAmber">Terminale Ambra</option>
+            <option value="default" data-i18n="themeDefault">Cyber Cyan (Default)</option>
+            <option value="matrix" data-i18n="themeMatrix">Matrix Emerald</option>
+            <option value="amber" data-i18n="themeAmber">Amber Terminal</option>
             <option value="crimson" data-i18n="themeCrimson">Crimson Protocol</option>
           </select>
         </div>
@@ -510,13 +566,13 @@
           <label class="toggle-switch">
             <input type="checkbox" id="prefSoundToggle">
             <div class="toggle-slider"></div>
-            <span data-i18n="prefSound">Segnali Acustici di Notifica</span>
+            <span data-i18n="prefSound">Audio Feedback Beeps</span>
           </label>
         </div>
 
         <div class="control-group">
           <div class="control-label">
-            <span data-i18n="prefVolume">Volume Notifiche (%):</span>
+            <span data-i18n="prefVolume">Beep Volume (%):</span>
             <span id="prefVolumeVal" style="color:var(--neon-cyan); font-weight:bold;">30%</span>
           </div>
           <input type="range" id="prefVolumeSlider" class="range-slider" min="0" max="100" value="30">
@@ -525,11 +581,11 @@
         <div style="margin-top: 24px; padding: 16px; background:var(--bg-tertiary); border-radius:8px; font-family:var(--font-mono); font-size:0.8rem; color:var(--text-muted); line-height:1.6;">
           <strong style="color:var(--neon-cyan);">AirGap Protocol v2.4.0</strong><br/>
           <span data-i18n="aboutFooterText">
-            • Codici a Fontana Sistematici Luby Transform & RaptorQ su GF(2)<br/>
-            • Framing Intestazione Binaria OPTX-v2 da 20 Byte Little-Endian<br/>
-            • Zero Cloud / Zero CDN / CSP Isolato a Livello Client (connect-src 'none')<br/>
-            • Timestamp Privacy Relativi alla Sessione (T+00:00.0)<br/>
-            • Licenza Open Source MIT
+            • Systematic Luby Transform & RaptorQ-inspired Fountain Codes over GF(2)<br/>
+            • 20-Byte OPTX-v2 Little-Endian Wire Header Framing<br/>
+            • Zero Cloud / Zero CDN / Pure Client-Side CSP (connect-src 'none')<br/>
+            • Session-Relative Privacy Timestamps (T+00:00.0)<br/>
+            • Open Source MIT License
           </span>
         </div>
       </div>

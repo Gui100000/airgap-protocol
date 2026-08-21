@@ -1,6 +1,7 @@
 /**
  * AirGap Protocol - Bilingual Translation Dictionary (EN / IT) v2.4.0
  * 100% offline, reactive i18n manager with dynamic key substitution.
+ * Defaults to English (EN) on first visit, with instant toggle to Italian (IT).
  */
 const I18N_DICTIONARY = {
   en: {
@@ -315,7 +316,7 @@ const I18N_DICTIONARY = {
 
 class I18nManager {
   constructor() {
-    this.currentLang = 'it';
+    this.currentLang = 'en'; // Default to English
     this.listeners = new Set();
   }
 
@@ -324,13 +325,11 @@ class I18nManager {
       const stored = localStorage.getItem('airgap_lang');
       if (stored && (stored === 'en' || stored === 'it')) {
         this.currentLang = stored;
-      } else if (navigator.language && navigator.language.startsWith('en')) {
-        this.currentLang = 'en';
       } else {
-        this.currentLang = 'it';
+        this.currentLang = 'en'; // Default first-visit language is English
       }
     } catch (e) {
-      this.currentLang = 'it';
+      this.currentLang = 'en';
     }
     this.applyTranslations();
   }
