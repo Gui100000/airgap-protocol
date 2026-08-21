@@ -481,15 +481,29 @@ class AirgapApp {
     this.txFiles.forEach((f, idx) => {
       const row = document.createElement('div');
       row.className = 'file-list-item';
-      row.innerHTML = `
-        <span class="file-list-name" title="${f.name}">📄 ${f.name}</span>
-        <span class="file-list-size">${AirgapUtilities.formatBytes(f.size)}</span>
-        <button class="btn-remove-file" data-idx="${idx}" title="Remove file">✖</button>
-      `;
-      row.querySelector('.btn-remove-file').addEventListener('click', (e) => {
+
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'file-list-name';
+      nameSpan.title = f.name;
+      nameSpan.textContent = '📄 ' + f.name;
+
+      const sizeSpan = document.createElement('span');
+      sizeSpan.className = 'file-list-size';
+      sizeSpan.textContent = AirgapUtilities.formatBytes(f.size);
+
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'btn-remove-file';
+      removeBtn.setAttribute('data-idx', idx);
+      removeBtn.title = 'Remove file';
+      removeBtn.textContent = '✖';
+      removeBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         this._removeFileAtIndex(idx);
       });
+
+      row.appendChild(nameSpan);
+      row.appendChild(sizeSpan);
+      row.appendChild(removeBtn);
       fileListEl.appendChild(row);
     });
 
