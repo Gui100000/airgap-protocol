@@ -1,5 +1,5 @@
 /**
- * AirGap Protocol - Main Application Controller & UI State Machine v2.3.0
+ * AirGap Protocol - Main Application Controller & UI State Machine v2.4.0
  * 100% Offline, Zero-Network, Real Mathematical Telemetry & Cyberpunk HUD.
  */
 
@@ -33,14 +33,17 @@ class AirgapApp {
     this.rxDroppedCount = 0;
     this.rxBlockMap = null;
 
-    // Audio & Preferences (Default OFF)
+    // Wake Lock
+    this.wakeLock = null;
+
+    // Audio & Preferences
     this.audioEnabled = false;
     this.audioVolume = 0.30;
     this.audioCtx = null;
   }
 
   async init() {
-    Logger.info('SYSTEM', 'Initializing AirGap Protocol v2.3.0...');
+    Logger.info('SYSTEM', 'Initializing AirGap Protocol v2.4.0...');
 
     // Register Service Worker for Offline PWA
     if ('serviceWorker' in navigator) {
@@ -48,7 +51,7 @@ class AirgapApp {
         await navigator.serviceWorker.register('./sw.js');
         Logger.success('PWA', 'Cache-First Service Worker active. 100% offline isolation guaranteed.');
       } catch (err) {
-        Logger.warn('PWA', 'Service worker registration note:', err.message);
+        Logger.warn('PWA', 'Service worker registration note: ' + err.message);
       }
     }
 
@@ -65,9 +68,13 @@ class AirgapApp {
     this._bindReceiverUI();
     this._bindUtilitiesUI();
     this._bindSettingsAndLogs();
+    this._bindClipboardPaste();
 
     // Initialize Logger Subscription
     this._initLogViewer();
+
+    // Render Initial Interactive Test Pattern QR
+    this._renderTestPattern();
 
     Logger.success('SYSTEM', 'AirGap Protocol ready. All cryptographic and fountain modules loaded.');
   }
@@ -76,6 +83,23 @@ class AirgapApp {
     try {
       if ('vibrate' in navigator) {
         navigator.vibrate(pattern);
+      }
+    } catch (e) {}
+  }
+
+  async _requestWakeLock() {
+    try {
+      if ('wakeLock' in navigator && !this.wakeLock) {
+        this.wakeLock = await navigator.wakeLock.request('screen');
+      }
+    } catch (e) {}
+  }
+
+  async _releaseWakeLock() {
+    try {
+      if (this.wakeLock) {
+        await this.wakeLock.release();
+        this.wakeLock = null;
       }
     } catch (e) {}
   }
@@ -90,7 +114,7 @@ class AirgapApp {
       this.rxWorker.onmessage = (e) => this._handleRxWorkerMessage(e.data);
       this.rxWorker.onerror = (e) => Logger.error('RX_WORKER', e.message);
     } catch (e) {
-      Logger.error('SYSTEM', 'Web Workers initialization failed:', e.message);
+      Logger.error('SYSTEM', 'Web Workers initialization failed: ' + e.message);
     }
   }
 
@@ -139,6 +163,9 @@ class AirgapApp {
         this._updateTxUIState();
         this._updateRxUIState();
         this._renderConstellation();
+        if (this.txState === 'IDLE' && !this.txMeta) {
+          this._renderTestPattern();
+        }
       });
       langBtn.textContent = i18n.currentLang.toUpperCase();
     }
@@ -166,6 +193,29 @@ class AirgapApp {
     });
   }
 
+  _bindClipboardPaste() {
+    document.addEventListener('paste', async (e) => {
+      // If user pastes on transmitter tab
+      const txPanel = document.getElementById('panel-tx');
+      if (!txPanel || !txPanel.classList.contains('active')) return;
+
+      if (e.clipboardData && e.clipboardData.files && e.clipboardData.files.length > 0) {
+        this._vibrate(15);
+        this._loadTxFiles(Array.from(e.clipboardData.files));
+        Logger.info('TX', i18n.t('clipboardPastedNotice'));
+      } else {
+        const text = e.clipboardData.getData('text');
+        if (text && text.trim().length > 0) {
+          this._vibrate(15);
+          const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+          const file = new File([blob], `pasted_text_${Date.now().toString().substr(-4)}.txt`, { type: 'text/plain' });
+          this._loadTxFiles([file]);
+          Logger.info('TX', i18n.t('clipboardPastedNotice'));
+        }
+      }
+    });
+  }
+
   // ==========================================
   // TRANSMITTER (TX) CONTROLLER
   // ==========================================
@@ -186,7 +236,7 @@ class AirgapApp {
     const compressToggle = document.getElementById('txCompressToggle');
     const stopAt100Toggle = document.getElementById('txStopAt100Toggle');
 
-    // Prevent changing locked settings during transmission
+    // Locked settings notice during stream
     const lockedContainer = document.getElementById('txLockedSettingsArea');
     if (lockedContainer) {
       lockedContainer.addEventListener('click', (e) => {
@@ -222,6 +272,7 @@ class AirgapApp {
       fpsVal.textContent = `${this.txFps} FPS`;
       if (this.txFps > 25) {
         fpsWarning.style.display = 'block';
+        Logger.warn('TX', `High FPS selected (${this.txFps} FPS). May challenge slower smartphone cameras.`);
       } else {
         fpsWarning.style.display = 'none';
       }
@@ -233,12 +284,20 @@ class AirgapApp {
 
     chunkSelect.addEventListener('change', (e) => {
       this.txChunkSize = parseInt(e.target.value, 10);
-      if (this.txFiles.length > 0) this._reencodeTxFiles();
+      if (this.txFiles.length > 0) {
+        this._reencodeTxFiles();
+      } else {
+        this._renderTestPattern();
+      }
     });
 
     eccSelect.addEventListener('change', (e) => {
       this.txEcc = e.target.value;
-      if (this.txMeta) this._requestNextTxPacket();
+      if (this.txMeta) {
+        this._requestNextTxPacket();
+      } else {
+        this._renderTestPattern();
+      }
     });
 
     compressToggle.addEventListener('change', (e) => {
@@ -259,10 +318,24 @@ class AirgapApp {
     btnReset.addEventListener('click', () => { this._vibrate(15); this._resetTx(); });
   }
 
+  _renderTestPattern() {
+    if (this.txMeta) return;
+    const canvas = document.getElementById('txQrCanvas');
+    if (!canvas) return;
+
+    try {
+      const demoPayload = new TextEncoder().encode(`AIRGAP PROTOCOL TEST PATTERN | ECC: ${this.txEcc} | DENSITY: ${this.txChunkSize}B | SYSTEMATIC GF(2)`);
+      QREngine.render(demoPayload, canvas, {
+        ecc: this.txEcc,
+        size: 380,
+        margin: 3
+      });
+    } catch (e) {}
+  }
+
   async _loadTxFiles(fileList) {
     if (!fileList || fileList.length === 0) return;
     
-    // Append newly dropped files to existing txFiles
     const mergedList = [...this.txFiles, ...fileList];
     this.txFiles = mergedList;
 
@@ -275,14 +348,18 @@ class AirgapApp {
 
     // Check > 100 MB Limit
     if (totalSize > 100 * 1024 * 1024) {
-      errBanner.textContent = i18n.t('errorOver100Mb', { size: AirgapUtilities.formatBytes(totalSize) });
+      const errText = i18n.t('errorOver100Mb', { size: AirgapUtilities.formatBytes(totalSize) });
+      errBanner.textContent = errText;
       errBanner.style.display = 'block';
+      Logger.error('TX', `Ingestion blocked: Total size (${AirgapUtilities.formatBytes(totalSize)}) exceeds 100 MB limit.`);
       this.txState = 'IDLE';
       this._updateTxUIState();
       return;
     } else if (totalSize > 30 * 1024 * 1024) {
-      warnBanner.textContent = i18n.t('warnOver30Mb');
+      const warnText = i18n.t('warnOver30Mb');
+      warnBanner.textContent = warnText;
       warnBanner.style.display = 'block';
+      Logger.warn('TX', `Large file warning: ${AirgapUtilities.formatBytes(totalSize)} may take several minutes optically.`);
     }
 
     this.txState = 'ENCODING';
@@ -366,7 +443,7 @@ class AirgapApp {
         break;
 
       case 'ENCODER_ERROR':
-        Logger.error('TX', 'Encoder error:', payload.error);
+        Logger.error('TX', 'Encoder error: ' + payload.error);
         this.txState = 'IDLE';
         this._updateTxUIState();
         break;
@@ -377,7 +454,6 @@ class AirgapApp {
     const metaCard = document.getElementById('txFileMetaCard');
     const fileListEl = document.getElementById('txFileListContainer');
     
-    // Render multi-file list with individual ✖ delete buttons
     fileListEl.innerHTML = '';
     this.txFiles.forEach((f, idx) => {
       const row = document.createElement('div');
@@ -420,10 +496,10 @@ class AirgapApp {
     const timeStr = `${mins}:${String(secs).padStart(2, '0')}`;
     if (etaEl) etaEl.textContent = timeStr;
 
-    // Show warning if duration > 3 minutes (180s)
     if (totalSecs > 180 && durationWarn) {
       durationWarn.textContent = i18n.t('warnHighDuration', { duration: timeStr });
       durationWarn.style.display = 'block';
+      Logger.warn('TX', `Estimated transmission duration is high (${timeStr}). Consider increasing FPS or compression.`);
     } else if (durationWarn) {
       durationWarn.style.display = 'none';
     }
@@ -434,6 +510,7 @@ class AirgapApp {
     this.txState = 'STREAMING';
     this.txStartTime = Date.now();
     this.txBytesStreamed = 0;
+    this._requestWakeLock();
     this._updateTxUIState();
     this._restartTxTimer();
     Logger.info('TX', `Optical broadcast started at ${this.txFps} FPS.`);
@@ -472,6 +549,7 @@ class AirgapApp {
       this.txTimer = null;
     }
     this.txPacketIndex = 0;
+    this._releaseWakeLock();
     this._updateTxUIState();
     Logger.info('TX', 'Transmission stopped.');
   }
@@ -506,14 +584,10 @@ class AirgapApp {
     document.getElementById('txTelemetryRate').textContent = '0.0 KB/s';
     document.getElementById('txTelemetryEta').textContent = '0:00';
 
-    const canvas = document.getElementById('txQrCanvas');
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
     const fileInput = document.getElementById('txFileInput');
     if (fileInput) fileInput.value = '';
 
+    this._renderTestPattern();
     this._updateTxUIState();
     Logger.info('TX', 'Transmitter reset to clean state.');
   }
@@ -573,7 +647,7 @@ class AirgapApp {
       rateEl.textContent = `${realRateKBs} KB/s`;
 
     } catch (e) {
-      Logger.warn('TX', 'QR Rendering error:', e.message);
+      Logger.warn('TX', 'QR Rendering error: ' + e.message);
     }
   }
 
@@ -595,7 +669,6 @@ class AirgapApp {
     btnPause.disabled = !hasFile || this.txState !== 'STREAMING';
     btnStop.disabled = !hasFile || !isStreamingOrPaused;
 
-    // Settings are only disabled DURING active streaming or pause!
     fpsSlider.disabled = isStreamingOrPaused;
     chunkSelect.disabled = isStreamingOrPaused;
     eccSelect.disabled = isStreamingOrPaused;
@@ -604,7 +677,7 @@ class AirgapApp {
 
     switch (this.txState) {
       case 'IDLE':
-        statusText.textContent = i18n.t('txStatusIdle');
+        statusText.textContent = hasFile ? i18n.t('txStatusIdle') : i18n.t('txStatusIdle');
         break;
       case 'ENCODING':
         statusText.textContent = i18n.t('txStatusEncoding');
@@ -645,13 +718,14 @@ class AirgapApp {
         const deviceId = camSelect.value || null;
         await this.scanner.startCamera(deviceId);
         this.rxState = 'SCANNING';
+        this._requestWakeLock();
         this._updateRxUIState();
         btnStartCam.style.display = 'none';
         btnStopCam.style.display = 'inline-block';
         Logger.info('RX', 'Optical video scanner started.');
         this._refreshCameraList();
       } catch (err) {
-        Logger.error('RX', 'Camera permission error:', err.message);
+        Logger.error('RX', 'Camera permission error: ' + err.message);
         alert(i18n.t('errorCameraPermission'));
       }
     });
@@ -666,6 +740,7 @@ class AirgapApp {
       const active = await this.scanner.toggleTorch();
       btnTorch.classList.toggle('active', active);
       if (!active && !this.scanner.currentTrack?.getCapabilities?.()?.torch) {
+        Logger.warn('RX', 'Torch/Flash not supported on this camera device.');
         alert(i18n.t('torchNotAvailable'));
       }
     });
@@ -686,7 +761,7 @@ class AirgapApp {
       if (e.target.files && e.target.files.length > 0) {
         const success = await this.scanner.scanImageFile(e.target.files[0]);
         if (!success) {
-          Logger.warn('RX', 'No valid QR code detected in uploaded image.');
+          Logger.warn('RX', 'No valid QR code detected in uploaded snapshot.');
         }
       }
     });
@@ -729,6 +804,7 @@ class AirgapApp {
       this.scanner.stopCamera();
     }
     this.rxState = 'STANDBY';
+    this._releaseWakeLock();
     this._updateRxUIState();
     document.getElementById('btnStartCam').style.display = 'inline-block';
     document.getElementById('btnStopCam').style.display = 'none';
@@ -777,10 +853,11 @@ class AirgapApp {
       case 'PACKET_CORRUPTED':
         this.rxDroppedCount++;
         document.getElementById('rxTelemetryDropped').textContent = this.rxDroppedCount;
+        Logger.warn('RX', `Corrupted optical frame dropped (#${this.rxDroppedCount}).`);
         break;
 
       case 'DECODER_ERROR':
-        Logger.error('RX', 'Decoder error:', payload.error);
+        Logger.error('RX', 'Decoder error: ' + payload.error);
         break;
     }
   }
@@ -867,6 +944,7 @@ class AirgapApp {
 
   _onDecodingComplete(result) {
     this.rxState = 'COMPLETED';
+    this._releaseWakeLock();
     this._updateRxUIState();
     this._playChimeSuccess();
 
@@ -906,14 +984,38 @@ class AirgapApp {
   _bindUtilitiesUI() {
     // 1. File Splitter
     const splitInput = document.getElementById('splitFileInput');
+    const btnBrowseSplit = document.getElementById('btnBrowseSplit');
+    const splitModeSelect = document.getElementById('splitModeSelect');
+    const splitSizeArea = document.getElementById('splitSizeArea');
+    const splitCountArea = document.getElementById('splitCountArea');
     const splitSize = document.getElementById('splitSizeInput');
     const splitUnit = document.getElementById('splitUnitSelect');
+    const splitCount = document.getElementById('splitCountInput');
     const btnSplit = document.getElementById('btnRunSplit');
     const splitResults = document.getElementById('splitResultsArea');
     const btnClearSplit = document.getElementById('btnClearSplitFile');
     const splitFileNameDisplay = document.getElementById('splitFileNameDisplay');
 
     let currentSplitParts = [];
+
+    if (btnBrowseSplit) {
+      btnBrowseSplit.addEventListener('click', () => {
+        this._vibrate(10);
+        splitInput.click();
+      });
+    }
+
+    if (splitModeSelect) {
+      splitModeSelect.addEventListener('change', () => {
+        if (splitModeSelect.value === 'count') {
+          splitSizeArea.style.display = 'none';
+          splitCountArea.style.display = 'block';
+        } else {
+          splitSizeArea.style.display = 'grid';
+          splitCountArea.style.display = 'none';
+        }
+      });
+    }
 
     splitInput.addEventListener('change', () => {
       if (splitInput.files && splitInput.files.length > 0) {
@@ -924,7 +1026,9 @@ class AirgapApp {
     });
 
     if (btnClearSplit) {
-      btnClearSplit.addEventListener('click', () => {
+      btnClearSplit.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         this._vibrate(10);
         splitInput.value = '';
         splitFileNameDisplay.textContent = '';
@@ -942,23 +1046,46 @@ class AirgapApp {
         return;
       }
       const file = splitInput.files[0];
-      const val = parseFloat(splitSize.value);
-      if (isNaN(val) || val < 1 || val > 1024) {
-        alert(i18n.t('errorSplitRange'));
-        return;
-      }
-      const unit = splitUnit.value;
+      const isCountMode = splitModeSelect && splitModeSelect.value === 'count';
 
       try {
-        Logger.info('TOOLS', `Splitting ${file.name} into ${val} ${unit} parts...`);
-        const res = await AirgapUtilities.splitFile(file, val, unit);
+        let res;
+        if (isCountMode) {
+          const countVal = parseInt(splitCount.value, 10);
+          if (isNaN(countVal) || countVal < 1 || countVal > 100) {
+            Logger.error('TOOLS', 'Smart Split failed: count must be between 1 and 100.');
+            alert(i18n.t('errorSplitCountRange'));
+            return;
+          }
+          Logger.info('TOOLS', `Splitting ${file.name} into ${countVal} equal parts...`);
+          res = await AirgapUtilities.splitFileByCount(file, countVal);
+        } else {
+          const val = parseFloat(splitSize.value);
+          if (isNaN(val) || val < 1 || val > 1024) {
+            Logger.error('TOOLS', 'Split failed: part size must be between 1 and 1024.');
+            alert(i18n.t('errorSplitRange'));
+            return;
+          }
+          const unit = splitUnit.value;
+          Logger.info('TOOLS', `Splitting ${file.name} into ${val} ${unit} parts...`);
+          res = await AirgapUtilities.splitFile(file, val, unit);
+        }
+
         currentSplitParts = res.parts;
 
+        // Generate instant 1-click ZIP package
+        const zipBlob = await AirgapUtilities.createZipBundle(res.parts);
+        const zipUrl = URL.createObjectURL(zipBlob);
+        const zipName = `${file.name}_split_${res.totalParts}_parts.zip`;
+
         splitResults.innerHTML = `
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <strong>${res.totalParts} Parts Created:</strong>
-            <button id="btnDownloadAllParts" class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;">${i18n.t('downloadAllParts')}</button>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+            <strong>${res.totalParts} Parts Created (${AirgapUtilities.formatBytes(zipBlob.size)} Total):</strong>
+            <a href="${zipUrl}" download="${zipName}" class="btn-primary" style="width:auto; padding:6px 14px; font-size:0.82rem; text-decoration:none; text-align:center;">
+              ${i18n.t('downloadAllPartsZip')}
+            </a>
           </div>
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:6px;">${i18n.t('downloadSingleParts')}</div>
           <div id="splitLinksList"></div>
         `;
 
@@ -967,7 +1094,7 @@ class AirgapApp {
           const link = document.createElement('a');
           link.href = URL.createObjectURL(p.blob);
           link.download = p.name;
-          link.textContent = `💾 Download ${p.name} (${AirgapUtilities.formatBytes(p.size)})`;
+          link.textContent = `💾 ${p.name} (${AirgapUtilities.formatBytes(p.size)})`;
           link.className = 'btn-secondary';
           link.style.display = 'inline-block';
           link.style.margin = '3px 0';
@@ -975,28 +1102,13 @@ class AirgapApp {
           listEl.appendChild(document.createElement('br'));
         });
 
-        document.getElementById('btnDownloadAllParts').addEventListener('click', () => {
-          this._vibrate(15);
-          currentSplitParts.forEach((p, idx) => {
-            setTimeout(() => {
-              const a = document.createElement('a');
-              a.href = URL.createObjectURL(p.blob);
-              a.download = p.name;
-              document.body.appendChild(a);
-              a.click();
-              setTimeout(() => {
-                document.body.removeChild(a);
-                URL.revokeObjectURL(a.href);
-              }, 200);
-            }, idx * 150);
-          });
-        });
-
-        Logger.success('TOOLS', `File split successfully into ${res.totalParts} slices.`);
+        Logger.success('TOOLS', `File split successfully into ${res.totalParts} parts.`);
       } catch (err) {
         if (err.message === 'MAX_PARTS_EXCEEDED') {
+          Logger.error('TOOLS', `Split failed: generated ${err.partCount} parts (exceeds max 100 limit).`);
           alert(i18n.t('errorSplitMaxParts', { count: err.partCount }));
         } else {
+          Logger.error('TOOLS', 'Split error: ' + err.message);
           alert(i18n.t('errorSplitRange'));
         }
       }
@@ -1004,10 +1116,18 @@ class AirgapApp {
 
     // 2. File Merger
     const mergeInput = document.getElementById('mergePartsInput');
+    const btnBrowseMerge = document.getElementById('btnBrowseMerge');
     const btnMerge = document.getElementById('btnRunMerge');
     const mergeResults = document.getElementById('mergeResultsArea');
     const btnClearMerge = document.getElementById('btnClearMergeFiles');
     const mergeFileNamesDisplay = document.getElementById('mergeFileNamesDisplay');
+
+    if (btnBrowseMerge) {
+      btnBrowseMerge.addEventListener('click', () => {
+        this._vibrate(10);
+        mergeInput.click();
+      });
+    }
 
     mergeInput.addEventListener('change', () => {
       if (mergeInput.files && mergeInput.files.length > 0) {
@@ -1018,7 +1138,9 @@ class AirgapApp {
     });
 
     if (btnClearMerge) {
-      btnClearMerge.addEventListener('click', () => {
+      btnClearMerge.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         this._vibrate(10);
         mergeInput.value = '';
         mergeFileNamesDisplay.textContent = '';
@@ -1042,6 +1164,7 @@ class AirgapApp {
         let warnHtml = '';
         if (merged.hasUnnumberedFiles) {
           warnHtml = `<div style="background:rgba(255,183,3,0.15); border:1px solid var(--neon-amber); border-radius:6px; padding:8px; margin-top:8px; font-size:0.8rem; color:var(--neon-amber);">${i18n.t('errorMergerNoParts')}</div>`;
+          Logger.warn('TOOLS', 'Merged files without .part1, .part2 naming.');
         }
 
         mergeResults.innerHTML = `
@@ -1053,8 +1176,10 @@ class AirgapApp {
         Logger.success('TOOLS', `Assembled unified file: ${merged.name}`);
       } catch (err) {
         if (err.message === 'MAX_100_PARTS') {
+          Logger.error('TOOLS', 'Merge failed: exceeds 100 parts limit.');
           alert(i18n.t('errorMergerMax100'));
         } else {
+          Logger.error('TOOLS', 'Merge error: ' + err.message);
           alert(err.message);
         }
       }
@@ -1062,12 +1187,20 @@ class AirgapApp {
 
     // 3. Image Optimizer
     const imgInput = document.getElementById('optImageInput');
+    const btnBrowseOpt = document.getElementById('btnBrowseOpt');
     const qualityInput = document.getElementById('optQualityInput');
     const formatSelect = document.getElementById('optFormatSelect');
     const btnOpt = document.getElementById('btnRunOptImage');
     const optResults = document.getElementById('optResultsArea');
     const btnClearOpt = document.getElementById('btnClearOptImage');
     const optImageNameDisplay = document.getElementById('optImageNameDisplay');
+
+    if (btnBrowseOpt) {
+      btnBrowseOpt.addEventListener('click', () => {
+        this._vibrate(10);
+        imgInput.click();
+      });
+    }
 
     imgInput.addEventListener('change', () => {
       if (imgInput.files && imgInput.files.length > 0) {
@@ -1078,7 +1211,9 @@ class AirgapApp {
     });
 
     if (btnClearOpt) {
-      btnClearOpt.addEventListener('click', () => {
+      btnClearOpt.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         this._vibrate(10);
         imgInput.value = '';
         optImageNameDisplay.textContent = '';
@@ -1097,6 +1232,7 @@ class AirgapApp {
       const file = imgInput.files[0];
       const rawQ = parseInt(qualityInput.value, 10);
       if (isNaN(rawQ) || rawQ < 10 || rawQ > 100) {
+        Logger.error('TOOLS', 'Image optimization failed: Quality must be an integer between 10 and 100.');
         alert(i18n.t('errorQualityRange'));
         return;
       }
@@ -1119,6 +1255,7 @@ class AirgapApp {
         `;
         Logger.success('TOOLS', `Image processed: ${percentText}`);
       } catch (err) {
+        Logger.error('TOOLS', 'Image optimization error: ' + err.message);
         alert(i18n.t('errorQualityRange'));
       }
     });

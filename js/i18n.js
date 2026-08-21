@@ -1,5 +1,5 @@
 /**
- * AirGap Protocol - Bilingual Translation Dictionary (EN / IT) v2.3.0
+ * AirGap Protocol - Bilingual Translation Dictionary (EN / IT) v2.4.0
  * 100% offline, reactive i18n manager with dynamic key substitution.
  */
 const I18N_DICTIONARY = {
@@ -20,12 +20,13 @@ const I18N_DICTIONARY = {
     browseMultiple: "Select Part Files",
     noFileSelected: "No file selected",
     filesSelectedCount: "{count} file(s) selected",
-    downloadAllParts: "📦 DOWNLOAD ALL PARTS",
+    downloadAllPartsZip: "📦 DOWNLOAD ALL PARTS (.ZIP)",
+    downloadSingleParts: "Download Individual Parts:",
 
     // Transmitter
     txTitle: "High-Speed Optical Transmitter",
     txSubtitle: "Encodes binary files into animated QR fountain code streams.",
-    dropzonePrompt: "Drag & Drop file(s) here, or click to browse",
+    dropzonePrompt: "Drag & Drop file(s) here, paste clipboard (Ctrl+V), or browse",
     dropzoneHint: "Supports single or multiple files (up to 30 MB recommended, max 100 MB)",
     fileDetails: "File Ingestion Details",
     fileListTitle: "Files in Current Transfer:",
@@ -48,7 +49,7 @@ const I18N_DICTIONARY = {
     btnStepNext: "STEP +1",
     btnStepPrev: "STEP -1",
     btnResetTx: "RESET FILE",
-    txStatusIdle: "Ready. Select a file to initialize fountain encoder.",
+    txStatusIdle: "Demo test pattern displayed. Select a file to initialize fountain encoder.",
     txStatusEncoding: "Preparing blocks and computing fountain distribution...",
     txStatusStreaming: "Streaming visual QR packets...",
     txStatusPaused: "Transmission paused. Target frame frozen on display.",
@@ -62,6 +63,7 @@ const I18N_DICTIONARY = {
     errorOver100Mb: "🛑 Error: Total file size ({size}) exceeds 100 MB limit. Please use 'Utility Suite' -> 'Split File' to transfer in smaller parts.",
     warnHighDuration: "⏱️ Warning: Estimated duration is high ({duration}). Tip: Increase FPS or enable compression to speed up transfer.",
     settingsLockedToast: "🔒 Settings are locked during active transmission. Click 'Reset File' to change settings or frame rate.",
+    clipboardPastedNotice: "📋 Pasted payload from clipboard loaded successfully.",
 
     // Receiver
     rxTitle: "High-Speed Optical Receiver",
@@ -96,13 +98,18 @@ const I18N_DICTIONARY = {
     // Utilities
     toolsTitle: "Air-Gapped Utility Suite",
     toolsSubtitle: "Offline processing tools for payload splitting, merging, and image compression.",
-    splitterTitle: "In-Memory File Splitter",
-    splitterDesc: "Divide large files into fixed-size segments (.part1, .part2) before transmission.",
+    splitterTitle: "Smart File Splitter",
+    splitterDesc: "Divide large files into segments (.part1, .part2) by exact size or into N equal parts.",
+    splitModeLabel: "Split Mode:",
+    splitBySize: "By Part Size (KB / MB)",
+    splitByCount: "By Number of Parts (1 - 100)",
     splitUnitLabel: "Part Unit",
     splitSizeLabel: "Part Size (1 - 1024):",
+    splitCountLabel: "Number of Equal Parts (1 - 100):",
     btnSplit: "SPLIT FILE",
     errorSplitRange: "Invalid value: please enter a number between 1 and 1024.",
     errorSplitMaxParts: "Limit exceeded: this part size would generate {count} parts. Max allowed limit is 100 parts. Please increase part size.",
+    errorSplitCountRange: "Invalid count: enter an integer number of parts between 1 and 100.",
     mergerTitle: "File Part Merger",
     mergerDesc: "Recombine multi-part slice files (.part1, .part2) into the original unified file (up to 100 parts).",
     btnMerge: "MERGE PARTS",
@@ -167,12 +174,13 @@ const I18N_DICTIONARY = {
     browseMultiple: "Seleziona Parti",
     noFileSelected: "Nessun file selezionato",
     filesSelectedCount: "{count} file selezionati",
-    downloadAllParts: "📦 SCARICA TUTTE LE PARTI",
+    downloadAllPartsZip: "📦 SCARICA TUTTE LE PARTI (.ZIP)",
+    downloadSingleParts: "Scarica Singole Parti:",
 
     // Transmitter
     txTitle: "Trasmettitore Ottico ad Alta Velocità",
     txSubtitle: "Codifica file binari in stream visivi di codici QR a fontana senza limiti di tempo.",
-    dropzonePrompt: "Trascina qui i file da trasmettere, o clicca per selezionare",
+    dropzonePrompt: "Trascina qui i file, incolla da appunti (Ctrl+V) o seleziona",
     dropzoneHint: "Supporta file singoli o multipli (consigliato fino a 30 MB, max 100 MB)",
     fileDetails: "Dettagli File Acquisito",
     fileListTitle: "File nel Trasferimento Corrente:",
@@ -195,7 +203,7 @@ const I18N_DICTIONARY = {
     btnStepNext: "PASSO +1",
     btnStepPrev: "PASSO -1",
     btnResetTx: "REIMPOSTA FILE",
-    txStatusIdle: "Pronto. Seleziona un file per inizializzare l'encoder a fontana.",
+    txStatusIdle: "QR Code dimostrativo attivo. Seleziona un file per inizializzare l'encoder a fontana.",
     txStatusEncoding: "Suddivisione in blocchi e calcolo distribuzioni Soliton...",
     txStatusStreaming: "Trasmissione visiva pacchetti QR in corso...",
     txStatusPaused: "Trasmissione in pausa. Frame corrente bloccato a schermo.",
@@ -209,6 +217,7 @@ const I18N_DICTIONARY = {
     errorOver100Mb: "🛑 Errore: La dimensione totale ({size}) supera il limite massimo di 100 MB. Usa 'Suite Strumenti' -> 'Dividi File' per trasmetterlo in parti più piccole.",
     warnHighDuration: "⏱️ Attenzione: Durata stimata elevata ({duration}). Suggerimento: aumenta gli FPS o attiva la compressione.",
     settingsLockedToast: "🔒 Le impostazioni sono bloccate durante la trasmissione attiva. Clicca su 'Reimposta File' per modificarle.",
+    clipboardPastedNotice: "📋 Dati incollati dagli appunti caricati con successo.",
 
     // Receiver
     rxTitle: "Ricevitore Ottico ad Alta Velocità",
@@ -243,13 +252,18 @@ const I18N_DICTIONARY = {
     // Utilities
     toolsTitle: "Suite Utility Offline",
     toolsSubtitle: "Strumenti di elaborazione locale per divisione file, unione e compressione immagini.",
-    splitterTitle: "Divisione File in Memoria",
-    splitterDesc: "Dividi file voluminosi in segmenti numerati (.part1, .part2) prima della trasmissione.",
+    splitterTitle: "Divisione File Intelligente",
+    splitterDesc: "Dividi file voluminosi per dimensione fissa o in esattamente N parti uguali.",
+    splitModeLabel: "Modalità di Divisione:",
+    splitBySize: "Per Dimensione Parte (KB / MB)",
+    splitByCount: "Per Numero di Parti Uguali (1 - 100)",
     splitUnitLabel: "Unità Misura",
     splitSizeLabel: "Dimensione Parte (1 - 1024):",
+    splitCountLabel: "Numero di Parti Uguali (1 - 100):",
     btnSplit: "DIVIDI FILE",
     errorSplitRange: "Valore non valido: inserisci un numero compreso tra 1 e 1024.",
     errorSplitMaxParts: "Limite superato: questa dimensione genererebbe {count} parti. Il limite massimo è 100 parti. Aumenta la dimensione delle parti.",
+    errorSplitCountRange: "Conteggio non valido: inserisci un numero intero di parti compreso tra 1 e 100.",
     mergerTitle: "Unione Parti di File",
     mergerDesc: "Ricomponi file divisi in parti (.part1, .part2) nel file originale completo (fino a 100 parti).",
     btnMerge: "UNISCI PARTI",

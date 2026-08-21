@@ -84,7 +84,7 @@
             <svg class="dropzone-icon" viewBox="0 0 24 24">
               <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
             </svg>
-            <div class="dropzone-prompt" data-i18n="dropzonePrompt">Trascina qui i file da trasmettere, o clicca per selezionare</div>
+            <div class="dropzone-prompt" data-i18n="dropzonePrompt">Trascina qui i file, incolla da appunti (Ctrl+V) o seleziona</div>
             <div class="dropzone-hint" data-i18n="dropzoneHint">Supporta file singoli o multipli (consigliato fino a 30 MB, max 100 MB)</div>
           </div>
 
@@ -179,7 +179,7 @@
           </div>
 
           <p id="txStatusText" style="font-size:0.85rem; color:var(--text-muted); font-family:var(--font-mono); margin-top:14px; text-align:center;" data-i18n="txStatusIdle">
-            Pronto. Seleziona un file per inizializzare l'encoder a fontana.
+            QR Code dimostrativo attivo. Seleziona un file per inizializzare l'encoder a fontana.
           </p>
         </div>
 
@@ -193,7 +193,7 @@
           <div class="telemetry-grid">
             <div class="telemetry-box">
               <div class="telemetry-label" data-i18n="txPacketCounter">Frame Corrente</div>
-              <div id="txTelemetryPacket" class="telemetry-val">#0</div>
+              <div id="txTelemetryPacket" class="telemetry-val">DEMO</div>
             </div>
             <div class="telemetry-box">
               <div class="telemetry-label" data-i18n="txProgressPercent">Progresso Sistematico</div>
@@ -348,18 +348,27 @@
         <!-- 1. File Splitter -->
         <div class="hud-card">
           <div class="hud-header">
-            <h3 class="hud-title" data-i18n="splitterTitle">Divisione File in Memoria</h3>
-            <p class="hud-subtitle" data-i18n="splitterDesc">Dividi file voluminosi in segmenti numerati (.part1, .part2) prima della trasmissione.</p>
+            <h3 class="hud-title" data-i18n="splitterTitle">Divisione File Intelligente</h3>
+            <p class="hud-subtitle" data-i18n="splitterDesc">Dividi file voluminosi per dimensione fissa o in esattamente N parti uguali.</p>
           </div>
           
           <div class="custom-file-selector">
-            <button class="btn-secondary" style="width:auto; padding:6px 12px;" data-i18n="browseSingle">Seleziona File</button>
-            <input type="file" id="splitFileInput">
+            <button id="btnBrowseSplit" class="btn-secondary" style="width:auto; padding:6px 12px;" data-i18n="browseSingle">Seleziona File</button>
+            <input type="file" id="splitFileInput" style="display:none;">
             <span id="splitFileNameDisplay" class="file-name-badge" style="display:none;"></span>
             <button id="btnClearSplitFile" class="btn-icon" style="width:24px; height:24px; font-size:0.75rem; border-color:var(--neon-crimson); color:var(--neon-crimson); display:none;" title="Clear">✖</button>
           </div>
+
+          <div class="control-group">
+            <div class="control-label" data-i18n="splitModeLabel">Modalità di Divisione:</div>
+            <select id="splitModeSelect" class="select-input">
+              <option value="size" data-i18n="splitBySize" selected>Per Dimensione Parte (KB / MB)</option>
+              <option value="count" data-i18n="splitByCount">Per Numero di Parti Uguali (1 - 100)</option>
+            </select>
+          </div>
           
-          <div style="display:grid; grid-template-columns: 2fr 1fr; gap:12px;">
+          <!-- Size input area -->
+          <div id="splitSizeArea" style="display:grid; grid-template-columns: 2fr 1fr; gap:12px;">
             <div class="control-group">
               <div class="control-label" data-i18n="splitSizeLabel">Dimensione Parte (1 - 1024):</div>
               <input type="number" id="splitSizeInput" class="text-input" value="5" min="1" max="1024">
@@ -370,6 +379,14 @@
                 <option value="MB" selected>MB</option>
                 <option value="KB">KB</option>
               </select>
+            </div>
+          </div>
+
+          <!-- Count input area -->
+          <div id="splitCountArea" style="display:none;">
+            <div class="control-group">
+              <div class="control-label" data-i18n="splitCountLabel">Numero di Parti Uguali (1 - 100):</div>
+              <input type="number" id="splitCountInput" class="text-input" value="4" min="1" max="100" step="1">
             </div>
           </div>
 
@@ -385,8 +402,8 @@
           </div>
 
           <div class="custom-file-selector">
-            <button class="btn-secondary" style="width:auto; padding:6px 12px;" data-i18n="browseMultiple">Seleziona Parti</button>
-            <input type="file" id="mergePartsInput" multiple>
+            <button id="btnBrowseMerge" class="btn-secondary" style="width:auto; padding:6px 12px;" data-i18n="browseMultiple">Seleziona Parti</button>
+            <input type="file" id="mergePartsInput" multiple style="display:none;">
             <span id="mergeFileNamesDisplay" class="file-name-badge" style="display:none;"></span>
             <button id="btnClearMergeFiles" class="btn-icon" style="width:24px; height:24px; font-size:0.75rem; border-color:var(--neon-crimson); color:var(--neon-crimson); display:none;" title="Clear">✖</button>
           </div>
@@ -403,8 +420,8 @@
           </div>
 
           <div class="custom-file-selector">
-            <button class="btn-secondary" style="width:auto; padding:6px 12px;" data-i18n="browseSingle">Seleziona Immagine</button>
-            <input type="file" id="optImageInput" accept="image/*">
+            <button id="btnBrowseOpt" class="btn-secondary" style="width:auto; padding:6px 12px;" data-i18n="browseSingle">Seleziona Immagine</button>
+            <input type="file" id="optImageInput" accept="image/*" style="display:none;">
             <span id="optImageNameDisplay" class="file-name-badge" style="display:none;"></span>
             <button id="btnClearOptImage" class="btn-icon" style="width:24px; height:24px; font-size:0.75rem; border-color:var(--neon-crimson); color:var(--neon-crimson); display:none;" title="Clear">✖</button>
           </div>
@@ -506,7 +523,7 @@
         </div>
 
         <div style="margin-top: 24px; padding: 16px; background:var(--bg-tertiary); border-radius:8px; font-family:var(--font-mono); font-size:0.8rem; color:var(--text-muted); line-height:1.6;">
-          <strong style="color:var(--neon-cyan);">AirGap Protocol v2.3.0</strong><br/>
+          <strong style="color:var(--neon-cyan);">AirGap Protocol v2.4.0</strong><br/>
           <span data-i18n="aboutFooterText">
             • Codici a Fontana Sistematici Luby Transform & RaptorQ su GF(2)<br/>
             • Framing Intestazione Binaria OPTX-v2 da 20 Byte Little-Endian<br/>

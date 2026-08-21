@@ -1,6 +1,10 @@
 /**
- * AirGap Protocol - Air-Gapped Utility Suite v2.3.0
- * 100% in-memory processing: File Splitter (Max 100 parts, KB/MB), File Merger & Image Optimizer.
+ * AirGap Protocol - Air-Gapped Utility Suite v2.4.0
+ * 100% in-memory processing:
+ * - Smart File Splitter (By Size KB/MB & By Count 1..100)
+ * - Zero-Dependency Micro-ZIP Bundler (1-click download of all parts)
+ * - File Part Merger (up to 100 parts with validation)
+ * - Image Optimizer (Integer 10..100 quality)
  */
 
 class AirgapUtilities {
@@ -14,18 +18,14 @@ class AirgapUtilities {
       throw new Error('INVALID_RANGE');
     }
 
-    // Auto-convert >1024 KB to MB
     if (unit === 'KB' && numericVal >= 1024) {
       numericVal = numericVal / 1024;
       unit = 'MB';
     }
 
-    let partSizeBytes;
-    if (unit === 'KB') {
-      partSizeBytes = Math.floor(numericVal * 1024);
-    } else {
-      partSizeBytes = Math.floor(numericVal * 1024 * 1024);
-    }
+    let partSizeBytes = (unit === 'KB') 
+      ? Math.floor(numericVal * 1024) 
+      : Math.floor(numericVal * 1024 * 1024);
 
     partSizeBytes = Math.max(1024, partSizeBytes); // minimum 1 KB
 
@@ -36,6 +36,25 @@ class AirgapUtilities {
       throw err;
     }
 
+    return this._generateParts(file, partSizeBytes, totalParts, onProgress);
+  }
+
+  /**
+   * Smart File Splitter: divides file into exactly N equal parts (1..100).
+   */
+  static async splitFileByCount(file, numParts = 4, onProgress = null) {
+    const n = parseInt(numParts, 10);
+    if (isNaN(n) || n < 1 || n > 100) {
+      throw new Error('INVALID_PARTS_COUNT');
+    }
+
+    const partSizeBytes = Math.max(1, Math.ceil(file.size / n));
+    const totalParts = Math.min(n, Math.ceil(file.size / partSizeBytes));
+
+    return this._generateParts(file, partSizeBytes, totalParts, onProgress);
+  }
+
+  static async _generateParts(file, partSizeBytes, totalParts, onProgress) {
     const parts = [];
     for (let i = 0; i < totalParts; i++) {
       const start = i * partSizeBytes;
@@ -65,8 +84,121 @@ class AirgapUtilities {
   }
 
   /**
+   * Zero-Dependency Pure JS In-Memory ZIP Bundler.
+   * Packages all part files into a single standard .zip file without compression overhead.
+   */
+  static async createZipBundle(files) {
+    // files: Array of { name: string, blob: Blob }
+    const fileEntries = [];
+    let offset = 0;
+
+    for (const f of files) {
+      const arrayBuf = await f.blob.arrayBuffer();
+      const uint8 = new Uint8Array(arrayBuf);
+      const nameBytes = new TextEncoder().encode(f.name);
+      
+      // Calculate CRC-32
+      const crc = AirgapUtilities._crc32(uint8);
+
+      fileEntries.push({
+        name: f.name,
+        nameBytes,
+        data: uint8,
+        crc,
+        size: uint8.length,
+        offset
+      });
+
+      // Local header size: 30 + nameBytes.length + data.length
+      offset += 30 + nameBytes.length + uint8.length;
+    }
+
+    // Build the ZIP binary structure
+    const zipParts = [];
+
+    // 1. Local File Headers + File Data
+    for (const entry of fileEntries) {
+      const header = new Uint8Array(30 + entry.nameBytes.length);
+      const view = new DataView(header.buffer);
+      
+      view.setUint32(0, 0x04034b50, true); // Local file header signature
+      view.setUint16(4, 20, true);         // Version needed to extract (2.0)
+      view.setUint16(6, 0, true);          // General purpose bit flag
+      view.setUint16(8, 0, true);          // Compression method (0 = Store)
+      view.setUint16(10, 0x4821, true);    // Last mod file time
+      view.setUint16(12, 0x546b, true);    // Last mod file date
+      view.setUint32(14, entry.crc, true); // CRC-32
+      view.setUint32(18, entry.size, true);// Compressed size
+      view.setUint32(22, entry.size, true);// Uncompressed size
+      view.setUint16(26, entry.nameBytes.length, true); // File name length
+      view.setUint16(28, 0, true);         // Extra field length
+      header.set(entry.nameBytes, 30);
+
+      zipParts.push(header);
+      zipParts.push(entry.data);
+    }
+
+    const centralDirStart = offset;
+    let centralDirSize = 0;
+
+    // 2. Central Directory Headers
+    for (const entry of fileEntries) {
+      const cdHeader = new Uint8Array(46 + entry.nameBytes.length);
+      const view = new DataView(cdHeader.buffer);
+
+      view.setUint32(0, 0x02014b50, true); // Central directory file header signature
+      view.setUint16(4, 20, true);         // Version made by
+      view.setUint16(6, 20, true);         // Version needed to extract
+      view.setUint16(8, 0, true);          // General purpose bit flag
+      view.setUint16(10, 0, true);         // Compression method (0 = Store)
+      view.setUint16(12, 0x4821, true);    // Last mod file time
+      view.setUint16(14, 0x546b, true);    // Last mod file date
+      view.setUint32(16, entry.crc, true); // CRC-32
+      view.setUint32(20, entry.size, true);// Compressed size
+      view.setUint32(24, entry.size, true);// Uncompressed size
+      view.setUint16(28, entry.nameBytes.length, true); // File name length
+      view.setUint16(30, 0, true);         // Extra field length
+      view.setUint16(32, 0, true);         // File comment length
+      view.setUint16(34, 0, true);         // Disk number start
+      view.setUint16(36, 0, true);         // Internal file attributes
+      view.setUint32(38, 0, true);         // External file attributes
+      view.setUint32(42, entry.offset, true); // Relative offset of local header
+      cdHeader.set(entry.nameBytes, 46);
+
+      zipParts.push(cdHeader);
+      centralDirSize += cdHeader.length;
+    }
+
+    // 3. End of Central Directory Record
+    const eocd = new Uint8Array(22);
+    const eocdView = new DataView(eocd.buffer);
+    eocdView.setUint32(0, 0x06054b50, true); // EOCD signature
+    eocdView.setUint16(4, 0, true);          // Number of this disk
+    eocdView.setUint16(6, 0, true);          // Disk where central directory starts
+    eocdView.setUint16(8, fileEntries.length, true);  // Number of central directory records on this disk
+    eocdView.setUint16(10, fileEntries.length, true); // Total number of central directory records
+    eocdView.setUint32(12, centralDirSize, true);     // Size of central directory
+    eocdView.setUint32(16, centralDirStart, true);    // Offset of start of central directory
+    eocdView.setUint16(20, 0, true);                  // Comment length
+
+    zipParts.push(eocd);
+
+    return new Blob(zipParts, { type: 'application/zip' });
+  }
+
+  static _crc32(uint8Array) {
+    let crc = ~0;
+    for (let i = 0; i < uint8Array.length; i++) {
+      crc ^= uint8Array[i];
+      for (let j = 0; j < 8; j++) {
+        crc = (crc >>> 1) ^ (0xEDB88320 & -(crc & 1));
+      }
+    }
+    return (crc ^ ~0) >>> 0;
+  }
+
+  /**
    * Merges multiple slice parts in correct numerical order (.part1, .part2, .part3...)
-   * Validates max 100 parts and checks for standard part numbering.
    */
   static async mergeParts(partFiles, onProgress = null) {
     if (!partFiles || partFiles.length === 0) {
@@ -120,7 +252,7 @@ class AirgapUtilities {
   }
 
   /**
-   * Optimizes an image (rescales / re-encodes to WebP or JPEG) to reduce optical payload.
+   * Optimizes an image to reduce optical payload.
    * Validates integer quality strictly between 10 and 100.
    */
   static async optimizeImage(imageFile, qualityVal = 80, format = 'image/webp', maxDimension = 1920) {
