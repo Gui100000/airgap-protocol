@@ -1,0 +1,55 @@
+name: Bug Report
+description: File a bug or unexpected behavior in AirGap Protocol
+title: "[BUG]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the sections below to help us investigate.
+  - type: input
+    id: environment
+    attributes:
+      label: Operating System & Browser
+      description: e.g. Windows 11 / Chrome 128, Android 14 / Firefox 129, iOS 17 / Safari
+      placeholder: e.g., Android 14 (Pixel 7) / Chrome 128
+    validations:
+      required: true
+  - type: dropdown
+    id: role
+    attributes:
+      label: Component Encountered
+      options:
+        - "Transmitter (TX QR Generation)"
+        - "Receiver (RX Camera Scanner)"
+        - "Fountain / GF(2) Decoder"
+        - "Utility Suite (Splitter / Merger / Optimizer)"
+        - "PWA / Offline Service Worker"
+        - "Other"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description of the Bug
+      description: A clear and concise description of what happened.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Exact steps to reproduce the issue.
+      placeholder: |
+        1. Select file of size 1.2 MB
+        2. Set FPS to 20 and Chunk Density to 380 B
+        3. Click 'Start Stream'
+        4. Observe behavior...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Session Logs (Exported from System Logs tab)
+      description: Paste any relevant [WARN] or [ERROR] lines from the in-app log viewer.
+      render: text

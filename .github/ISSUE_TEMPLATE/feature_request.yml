@@ -1,0 +1,28 @@
+name: Feature Request / Suggestion
+description: Suggest an idea or architectural improvement for AirGap Protocol
+title: "[FEATURE]: "
+labels: ["enhancement", "idea"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea to improve the optical air-gap protocol, performance, or user experience? Let us know!
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or Use Case
+      description: What challenge or user need does this feature address?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe your proposed architectural or UI approach.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Any alternative solutions or workarounds you have considered.
