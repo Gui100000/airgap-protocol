@@ -292,6 +292,7 @@ class AirgapApp {
     // Tuning Controls
     fpsSlider.addEventListener('input', (e) => {
       this.txFps = parseInt(e.target.value, 10);
+      fpsSlider.setAttribute("aria-valuenow", this.txFps);
       fpsVal.textContent = `${this.txFps} FPS`;
       if (this.txFps > 25) {
         fpsWarning.style.display = 'block';
@@ -704,6 +705,13 @@ class AirgapApp {
     const isStreamingOrPaused = this.txState === 'STREAMING' || this.txState === 'PAUSED';
 
     btnStart.disabled = !hasFile || this.txState === 'STREAMING';
+    if (btnStart.disabled) {
+      btnStart.setAttribute('data-i18n-title', 'btnStartTxTitleDisabled');
+      btnStart.title = i18n.t('btnStartTxTitleDisabled');
+    } else {
+      btnStart.setAttribute('data-i18n-title', 'btnStartTxTitleEnabled');
+      btnStart.title = i18n.t('btnStartTxTitleEnabled');
+    }
     btnPause.disabled = !hasFile || this.txState !== 'STREAMING';
     btnStop.disabled = !hasFile || !isStreamingOrPaused;
 
@@ -1371,6 +1379,7 @@ class AirgapApp {
     if (volumeSlider) {
       volumeSlider.addEventListener('input', (e) => {
         this.audioVolume = parseInt(e.target.value, 10) / 100;
+        volumeSlider.setAttribute("aria-valuenow", e.target.value);
         if (volumeVal) volumeVal.textContent = `${e.target.value}%`;
       });
     }

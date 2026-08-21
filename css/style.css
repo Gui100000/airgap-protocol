@@ -897,3 +897,25 @@ body::before {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--neon-cyan);
 }
+
+
+/* Accessibility: Keyboard Focus Visible Indicators */
+:focus-visible {
+  outline: 2px solid var(--neon-cyan) !important;
+  outline-offset: 2px !important;
+}
+
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-icon:focus-visible,
+.tab-btn:focus-visible,
+.select-input:focus-visible,
+.text-input:focus-visible,
+.range-slider:focus-visible,
+.dropzone:focus-within {
+  box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.4), var(--glow-cyan) !important;
+}
+
+.toggle-switch input:focus-visible + .toggle-slider {
+  box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.4), var(--glow-cyan) !important;
+}
