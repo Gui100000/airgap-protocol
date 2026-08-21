@@ -50,6 +50,13 @@ const I18N_DICTIONARY = {
     btnStepNext: "STEP +1",
     btnStepPrev: "STEP -1",
     btnResetTx: "RESET FILE",
+    btnClearFileAriaLabel: "Clear selected file",
+    btnClearMergeAriaLabel: "Clear selected merge parts",
+    btnClearOptAriaLabel: "Clear selected image",
+    txFpsSliderAriaLabel: "Frame rate speed in frames per second",
+    prefVolumeSliderAriaLabel: "Beep audio feedback volume percentage",
+    btnStartTxTitleDisabled: "Select a file above to enable stream transmission",
+    btnStartTxTitleEnabled: "Start streaming QR fountain code",
     txStatusIdle: "Demo test pattern displayed. Select a file to initialize fountain encoder.",
     txStatusEncoding: "Preparing blocks and computing fountain distribution...",
     txStatusStreaming: "Streaming visual QR packets...",
@@ -204,6 +211,13 @@ const I18N_DICTIONARY = {
     btnStepNext: "PASSO +1",
     btnStepPrev: "PASSO -1",
     btnResetTx: "REIMPOSTA FILE",
+    btnClearFileAriaLabel: "Rimuovi il file selezionato",
+    btnClearMergeAriaLabel: "Rimuovi le parti selezionate",
+    btnClearOptAriaLabel: "Rimuovi l'immagine selezionata",
+    txFpsSliderAriaLabel: "Frequenza dei fotogrammi al secondo",
+    prefVolumeSliderAriaLabel: "Percentuale volume del segnale acustico",
+    btnStartTxTitleDisabled: "Seleziona prima un file per abilitare la trasmissione",
+    btnStartTxTitleEnabled: "Avvia trasmissione codice a fontana QR",
     txStatusIdle: "QR Code dimostrativo attivo. Seleziona un file per inizializzare l'encoder a fontana.",
     txStatusEncoding: "Suddivisione in blocchi e calcolo distribuzioni Soliton...",
     txStatusStreaming: "Trasmissione visiva pacchetti QR in corso...",
@@ -384,7 +398,17 @@ class I18nManager {
       }
     });
 
-    document.documentElement.lang = this.currentLang;
+    const ariaLabeled = rootElement.querySelectorAll('[data-i18n-aria-label]');
+    ariaLabeled.forEach(el => {
+      const key = el.getAttribute('data-i18n-aria-label');
+      if (key) {
+        el.setAttribute('aria-label', this.t(key));
+      }
+    });
+
+    if (typeof document !== "undefined" && document.documentElement) {
+      document.documentElement.lang = this.currentLang;
+    }
   }
 
   subscribe(listenerFn) {

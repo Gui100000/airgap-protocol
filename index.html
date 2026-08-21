@@ -175,7 +175,7 @@
                 <span data-i18n="speedFpsLabel">Frame Rate (QR / sec):</span>
                 <span id="txFpsVal" style="color:var(--neon-cyan); font-weight:bold;">15 FPS</span>
               </div>
-              <input type="range" id="txFpsSlider" class="range-slider" min="1" max="60" value="15">
+              <input type="range" id="txFpsSlider" class="range-slider" min="1" max="60" value="15" role="slider" aria-valuemin="1" aria-valuemax="60" aria-valuenow="15" data-i18n-aria-label="txFpsSliderAriaLabel" aria-label="Frame rate speed in frames per second">
               <div id="txFpsWarning" style="display:none; color:var(--neon-amber); font-size:0.75rem; margin-top:4px; font-family:var(--font-mono);">
                 ⚠️ &gt;25 FPS: Sconsigliato su smartphone con fotocamere lente.
               </div>
@@ -219,7 +219,7 @@
           </div>
 
           <!-- Playback Buttons -->
-          <button id="btnStartTx" class="btn-primary" disabled data-i18n="btnStartTx">START STREAM</button>
+          <button id="btnStartTx" class="btn-primary" disabled data-i18n="btnStartTx" data-i18n-title="btnStartTxTitleDisabled" title="Select a file above to enable stream transmission">START STREAM</button>
           
           <div class="btn-row">
             <button id="btnPauseTx" class="btn-secondary" disabled data-i18n="btnPauseTx">PAUSE / FREEZE</button>
@@ -410,7 +410,7 @@
             <button id="btnBrowseSplit" class="btn-secondary" style="width:auto; padding:6px 12px;" data-i18n="browseSingle">Select File</button>
             <input type="file" id="splitFileInput" style="display:none;">
             <span id="splitFileNameDisplay" class="file-name-badge" style="display:none;"></span>
-            <button id="btnClearSplitFile" class="btn-icon" style="width:24px; height:24px; font-size:0.75rem; border-color:var(--neon-crimson); color:var(--neon-crimson); display:none;" title="Clear">✖</button>
+            <button id="btnClearSplitFile" class="btn-icon" style="width:24px; height:24px; font-size:0.75rem; border-color:var(--neon-crimson); color:var(--neon-crimson); display:none;" title="Clear" data-i18n-title="btnClearFileAriaLabel" data-i18n-aria-label="btnClearFileAriaLabel" aria-label="Clear selected file">✖</button>
           </div>
 
           <div class="control-group">
@@ -459,7 +459,7 @@
             <button id="btnBrowseMerge" class="btn-secondary" style="width:auto; padding:6px 12px;" data-i18n="browseMultiple">Select Part Files</button>
             <input type="file" id="mergePartsInput" multiple style="display:none;">
             <span id="mergeFileNamesDisplay" class="file-name-badge" style="display:none;"></span>
-            <button id="btnClearMergeFiles" class="btn-icon" style="width:24px; height:24px; font-size:0.75rem; border-color:var(--neon-crimson); color:var(--neon-crimson); display:none;" title="Clear">✖</button>
+            <button id="btnClearMergeFiles" class="btn-icon" style="width:24px; height:24px; font-size:0.75rem; border-color:var(--neon-crimson); color:var(--neon-crimson); display:none;" title="Clear" data-i18n-title="btnClearMergeAriaLabel" data-i18n-aria-label="btnClearMergeAriaLabel" aria-label="Clear selected merge parts">✖</button>
           </div>
 
           <button id="btnRunMerge" class="btn-primary" data-i18n="btnMerge">MERGE PARTS</button>
@@ -477,7 +477,7 @@
             <button id="btnBrowseOpt" class="btn-secondary" style="width:auto; padding:6px 12px;" data-i18n="browseSingle">Select Image</button>
             <input type="file" id="optImageInput" accept="image/*" style="display:none;">
             <span id="optImageNameDisplay" class="file-name-badge" style="display:none;"></span>
-            <button id="btnClearOptImage" class="btn-icon" style="width:24px; height:24px; font-size:0.75rem; border-color:var(--neon-crimson); color:var(--neon-crimson); display:none;" title="Clear">✖</button>
+            <button id="btnClearOptImage" class="btn-icon" style="width:24px; height:24px; font-size:0.75rem; border-color:var(--neon-crimson); color:var(--neon-crimson); display:none;" title="Clear" data-i18n-title="btnClearOptAriaLabel" data-i18n-aria-label="btnClearOptAriaLabel" aria-label="Clear selected image">✖</button>
           </div>
 
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
@@ -573,7 +573,7 @@
             <span data-i18n="prefVolume">Beep Volume (%):</span>
             <span id="prefVolumeVal" style="color:var(--neon-cyan); font-weight:bold;">30%</span>
           </div>
-          <input type="range" id="prefVolumeSlider" class="range-slider" min="0" max="100" value="30">
+          <input type="range" id="prefVolumeSlider" class="range-slider" min="0" max="100" value="30" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="30" data-i18n-aria-label="prefVolumeSliderAriaLabel" aria-label="Beep audio feedback volume percentage">
         </div>
 
         <div style="margin-top: 24px; padding: 16px; background:var(--bg-tertiary); border-radius:8px; font-family:var(--font-mono); font-size:0.8rem; color:var(--text-muted); line-height:1.6;">
