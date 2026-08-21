@@ -1,6 +1,7 @@
 # 📡 AirGap Protocol (`OPTX-v2`)
 
 [![GitHub Pages](https://img.shields.io/badge/Live_PWA-GitHub_Pages-00f0ff?style=for-the-badge&logo=github)](https://gui100000.github.io/airgap-protocol/)
+[![CI](https://github.com/Gui100000/airgap-protocol/actions/workflows/ci.yml/badge.svg)](https://github.com/Gui100000/airgap-protocol/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-39ff14?style=for-the-badge)](./LICENSE)
 [![Zero-Network](https://img.shields.io/badge/Network-0%25_Offline_(Air--Gapped)-ff007f?style=for-the-badge)](#zero-network-threat-model)
 [![Fountain Codes](https://img.shields.io/badge/Fountain-Systematic_Soliton_GF(2)-ffb703?style=for-the-badge)](#mathematical-foundation)
